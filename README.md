@@ -125,6 +125,17 @@ Users can explore features, learn how the system works, and get started by signi
 The **Dashboard** provides personalized insights, including study streaks, productivity scores, and weekly progress charts.
 It displays each enrolled course with details like hours spent, completion percentage, and current status.
 
+### 🧠Alert Notifications
+<img src="https://github.com/Lahari-balusu/Recommending-Study-Habits-Based-on-Student-Behavior/raw/main/images/notification%201.jpg?raw=true" alt="notifications" width="500">
+
+The AI Smart Assist System analyzes course completion data and triggers alerts.
+It recommends which courses to focus on based on progress (e.g., 75%+ complete).
+
+### 🎥 YouTube Course Integration
+<img src="https://github.com/Lahari-balusu/Recommending-Study-Habits-Based-on-Student-Behavior/raw/main/images/youtube%20.jpg?raw=true" alt="Youtube page" width="500">
+
+Each course module integrates directly with relevant YouTube tutorials.
+Students can watch the videos within the dashboard or save them for later learning.
 
 
 
