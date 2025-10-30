@@ -119,6 +119,7 @@ It tracks progress, analyzes performance data, and offers **AI-powered reminders
 The **Home Page** gives a quick overview of the platform.
 Users can explore features, learn how the system works, and get started by signing up or logging in.
 
+---
 ### 🎯 Dashboard page
 <img src="https://github.com/Lahari-balusu/Recommending-Study-Habits-Based-on-Student-Behavior/raw/main/images/Dashboard.jpg?raw=true" alt="Dashboard page" width="500">
 
