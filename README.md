@@ -79,10 +79,10 @@ It tracks progress, analyzes performance data, and offers **AI-powered reminders
 
 ### MySQL Database includes:
 
--Student Information (ID, Name, Email)
--Course Details (Course Name, Start Date, End Date)
--Study Behavior Data (Hours Spent, Completion %, Focus Levels)
--Quiz Data and Notifications
+- Student Information (ID, Name, Email)
+- Course Details (Course Name, Start Date, End Date)
+- Study Behavior Data (Hours Spent, Completion %, Focus Levels)
+- Quiz Data and Notifications
 
 ---
 
