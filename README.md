@@ -22,3 +22,92 @@ It tracks progress, analyzes performance data, and offers **AI-powered reminders
 
 **6.Update Study Logs** – Edit your data anytime for more accurate suggestions.
 
+---
+## 🛠 Administrator Features
+
+**1.Admin Login** – Secure access to admin dashboard.
+
+**2.Upload Datasets** – Manage student behavior and performance data.
+
+**3.Model Retraining** – Update AI models for better accuracy.
+
+**4.Manage Students** – Add, edit, or delete student records.
+
+**5.Dashboard Analytics** – View study behavior trends and overall system stats.
+
+---
+## 🧩 Milestones
+
+### ✅ Milestone 1
+
+1.Developed user registration and login modules.
+2.Built a student dashboard for navigation.
+3.Enabled data storage from frontend to database.
+
+### ✅ Milestone 2
+
+1.Added Course Tracking Section showing progress, completion %, and study hours.
+2.Created Admin Dashboard to manage student records.
+3.Enabled real-time data updates from admin to user side.
+
+### ✅ Milestone 3
+
+1.Built Personalized Dashboards for each user.
+2.Enabled multiple user accounts with independent course tracking.
+3.Integrated individual course modules with detailed status tracking.
+
+### ✅ Milestone 4
+
+1.Implemented Automated Email Notifications (morning, afternoon, evening).
+2.Added Quiz Reminder System for newly added quizzes.
+3.Integrated AI-based Dashboard Alerts for courses ≥ 75% completion.
+
+---
+## 🧠 Technology Stack
+
+| Component        | Technology                             |
+| ---------------- | -------------------------------------- |
+| Frontend         | HTML, CSS, JavaScript, React (if used) |
+| Backend          | Python (Flask / Django)                |
+| Database         | MySQL                                  |
+| Machine Learning | Scikit-learn / Pandas / NumPy          |
+| Notifications    | SMTP Email Integration                 |
+| Version Control  | Git & GitHub                           |
+
+---
+## 💾 Database Design
+
+### MySQL Database includes:
+
+-Student Information (ID, Name, Email)
+-Course Details (Course Name, Start Date, End Date)
+-Study Behavior Data (Hours Spent, Completion %, Focus Levels)
+-Quiz Data and Notifications
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
