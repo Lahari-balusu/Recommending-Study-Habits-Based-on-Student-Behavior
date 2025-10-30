@@ -114,7 +114,7 @@ It tracks progress, analyzes performance data, and offers **AI-powered reminders
 ## 📸 Screenshots
 
 ### 🏠 Home Page
-
+<img src="https://github.com/Lahari-balusu/Recommending-Study-Habits-Based-on-Student-Behavior/raw/main/home%20page.jpg?raw=true" alt="home page" width="500">
 
 
 
