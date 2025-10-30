@@ -87,28 +87,35 @@ It tracks progress, analyzes performance data, and offers **AI-powered reminders
 ---
 ## 📊 Dashboard Features
 
-- Displays study streak, productivity score, and weekly progress.
-- Tracks hours spent per course and completion percentage.
-- Displays alerts for pending courses and quizzes.
+- Displays **study streak, productivity score**, and **weekly progress**.
+- Tracks **hours spent per course** and completion percentage.
+- Displays **alerts for pending courses and quizzes**.
 
 ---
 ## 📧 Smart Notification System
 
-- Sends email reminders at scheduled times daily.
-- Notifies users when a new quiz is added.
-- Uses AI-based detection to prioritize courses nearing completion.
+- Sends **email reminders** at scheduled times daily.
+- Notifies users when a **new quiz** is added.
+- Uses **AI-based detection** to prioritize courses nearing completion.
 
 ---
 ## 🎥 YouTube Integration
 
 - Displays relevant video tutorials for enrolled courses.
-- Allows students to watch videos within dashboard or save for later.
+- Allows students to **watch videos within dashboard** or save for later.
 
 ---
 ## 🧾 Conclusion
 
-- The Study Habit Recommendation System acts as a digital study coach, helping students maintain consistency and efficiency.
-- It leverages data analysis and AI to promote smart, structured learning routines while giving administrators full control over system updates and analytics.
+- The Study Habit Recommendation System acts as a **digital study coach**, helping students maintain consistency and efficiency.
+- It leverages data analysis and AI to promote smart, **structured learning routines** while giving administrators full control over system updates and analytics.
+
+---
+## 📸 Screenshots
+
+### 🏠 Home Page
+![home page](https://github.com/user-attachments/assets/afd27f5b-844d-4bfe-a006-6aa057fb3fe8)
+
 
 
 
