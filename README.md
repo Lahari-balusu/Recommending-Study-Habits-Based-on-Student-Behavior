@@ -116,6 +116,15 @@ It tracks progress, analyzes performance data, and offers **AI-powered reminders
 ### 🏠 Home Page
 <img src="https://github.com/Lahari-balusu/Recommending-Study-Habits-Based-on-Student-Behavior/raw/main/images/home%20page.jpg?raw=true" alt="home page" width="500">
 
+The **Home Page** gives a quick overview of the platform.
+Users can explore features, learn how the system works, and get started by signing up or logging in.
+
+### 🎯 Dashboard page
+<img src="https://github.com/Lahari-balusu/Recommending-Study-Habits-Based-on-Student-Behavior/raw/main/images/Dashboard.jpg?raw=true" alt="Dashboard page" width="500">
+
+The **Dashboard** provides personalized insights, including study streaks, productivity scores, and weekly progress charts.
+It displays each enrolled course with details like hours spent, completion percentage, and current status.
+
 
 
 
