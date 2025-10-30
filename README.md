@@ -114,7 +114,7 @@ It tracks progress, analyzes performance data, and offers **AI-powered reminders
 ## 📸 Screenshots
 
 ### 🏠 Home Page
-![home page](https://github.com/user-attachments/assets/afd27f5b-844d-4bfe-a006-6aa057fb3fe8) width=300px
+![home page](https://github.com/user-attachments/assets/afd27f5b-844d-4bfe-a006-6aa057fb3fe8)
 
 
 
