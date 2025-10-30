@@ -1,0 +1,3365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    {% load custom_filters %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | StudyTrack AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #14b8a6;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Notification Styles */
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .notification-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Admin Panel Styles */
+        .admin-section {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .admin-section h2 {
+            color: var(--dark);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+        
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .admin-card {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        
+        .admin-card h3 {
+            color: var(--dark);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-card p {
+            color: var(--gray);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .admin-card .btn {
+            width: 100%;
+            text-align: center;
+        }
+        
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 380px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .notification-dropdown.show {
+            display: block;
+        }
+        
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        
+        .notification-item:hover {
+            background: #f1f5f9;
+        }
+        
+        .notification-item.unread {
+            background: #eff6ff;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+        }
+        
+        .notification-message {
+            color: var(--gray);
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+        
+        .notification-time {
+            font-size: 0.75rem;
+            color: var(--gray);
+            margin-top: 0.25rem;
+        }
+        
+        .notification-priority-high {
+            border-left: 3px solid var(--danger);
+        }
+        
+        .notification-priority-normal {
+            border-left: 3px solid var(--primary);
+        }
+        
+        .notification-priority-low {
+            border-left: 3px solid var(--gray);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f3f4f6;
+            color: #1f2937;
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--darker);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow-y: auto; /* Make sidebar scrollable */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+            transition: transform 0.3s ease;
+            z-index: 100;
+            scroll-behavior: smooth; /* Enable smooth scrolling */
+        }
+        
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .sidebar::-webkit-scrollbar {
+            display: none;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2.5rem;
+        }
+        
+        .logo-icon {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+        
+        .logo-text {
+            color: var(--light);
+            font-weight: 700;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo-text span {
+            color: var(--primary);
+        }
+        
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+        
+        .nav-title {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray);
+            margin-bottom: 1rem;
+            letter-spacing: 0.5px;
+            padding-left: 0.5rem;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            color: var(--light);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-light);
+        }
+        
+        .nav-link.active {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary);
+        }
+        
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 22px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* Sidebar collapsed state */
+        .sidebar-collapsed .sidebar {
+            transform: translateX(-280px);
+        }
+
+        /* Sidebar toggle button */
+        .sidebar-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 200;
+            background: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: none;
+            display: none;
+        }
+
+        .sidebar-collapsed .sidebar-toggle {
+            left: 15px;
+            display: flex;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            max-width: calc(100% - 280px);
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-collapsed .main-content {
+            margin-left: 0;
+            max-width: 100%;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .welcome-text {
+            color: #6b7280;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .notification-btn {
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+        
+        .notification-btn:hover {
+            background: #f9fafb;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.7rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .user-profile:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        /* Dashboard grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-auto-rows: minmax(100px, auto);
+            gap: 1.5rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1f2937;
+        }
+        
+        .card-action {
+            color: var(--primary);
+            background: none;
+            border: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .streak-card {
+            grid-column: span 3;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .streak-counter {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .streak-label {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+        
+        .study-time-card {
+            grid-column: span 4;
+        }
+        
+        .time-stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        
+        .time-stat-item {
+            flex: 1;
+            text-align: center;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .time-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.2rem;
+        }
+        
+        .time-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+        
+        .productivity-card {
+            grid-column: span 5;
+        }
+        
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary) 85%, #e5e7eb 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .score-circle::before {
+            content: "";
+            width: 64px;
+            height: 64px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+        }
+        
+        .score-value {
+            position: relative;
+            z-index: 1;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        
+        .score-details {
+            flex: 1;
+        }
+        
+        .score-title {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        
+        .score-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .upcoming-tasks-card {
+            grid-column: span 6;
+        }
+        
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem;
+            border-radius: 8px;
+            background: #f9fafb;
+            transition: all 0.2s;
+        }
+        
+        .task-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #d1d5db;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .task-checkbox.checked {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .task-checkbox i {
+            color: white;
+            font-size: 0.7rem;
+            display: none;
+        }
+        
+        .task-checkbox.checked i {
+            display: block;
+        }
+        
+        .task-content {
+            flex: 1;
+        }
+        
+        .task-title {
+            font-weight: 500;
+            margin-bottom: 0.2rem;
+        }
+        
+        .task-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
+        .task-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .task-priority {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .priority-high {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .priority-medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        
+        .priority-low {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .weekly-progress-card {
+            grid-column: span 6;
+            grid-row: span 2;
+        }
+        
+        .chart-container {
+            height: 250px;
+            margin-bottom: 1rem;
+        }
+        
+        .subject-progress-card {
+            grid-column: span 6;
+        }
+        
+        .progress-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .subject-progress-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .subject-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .icon-primary {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+        
+        .icon-secondary {
+            background: rgba(20, 184, 166, 0.1);
+            color: var(--secondary);
+        }
+        
+        .icon-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        
+        .icon-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .subject-content {
+            flex: 1;
+        }
+        
+        .subject-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subject-name {
+            font-weight: 500;
+        }
+        
+        .subject-percent {
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            width: 0; /* Set initial width to 0 */
+        }
+        
+        /* Set the width inline using style attribute in HTML */
+        .primary {
+            background: var(--primary);
+        }
+        
+        .secondary {
+            background: var(--secondary);
+        }
+        
+        .warning {
+            background: var(--warning);
+        }
+        
+        .danger {
+            background: var(--danger);
+        }
+        
+        .study-time-distribution-card {
+            grid-column: span 6;
+        }
+        
+        .productivity-trend-card {
+            grid-column: span 6;
+        }
+        
+        /* Content sections */
+        .content-section {
+            margin-top: 1rem;
+        }
+        
+        .section-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Loading indicator */
+        .loading-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+            color: var(--gray);
+            font-style: italic;
+        }
+        
+        /* Error message */
+        .error-message {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+        
+        /* Section styling */
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .subject-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Schedule section */
+        .schedule-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .schedule-event {
+            display: flex;
+            gap: 1rem;
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .priority-high { border-left-color: var(--danger); }
+        .priority-medium { border-left-color: var(--warning); }
+        .priority-low { border-left-color: var(--success); }
+        
+        .event-time {
+            min-width: 120px;
+            color: var(--gray);
+        }
+        
+        /* Tasks section */
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .task-item {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .task-progress {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .completed-tasks .task-item {
+            opacity: 0.7;
+            border-left-color: var(--success);
+        }
+        
+        /* Progress section */
+        .progress-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+        
+        .chart-bars {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 200px;
+            margin-top: 1.5rem;
+            padding-bottom: 2rem;
+        }
+        
+        .chart-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 40px;
+            position: relative;
+        }
+        
+        /* Insights section */
+        .learning-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .strengths-weaknesses {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .recommendations-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        /* Peer comparison section */
+        .comparison-overview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .comparison-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .comparison-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .bar-container {
+            flex-grow: 1;
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .bar {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+        
+        .bar.you { background: var(--primary); }
+        .bar.average { background: var(--gray); }
+        .bar.top { background: var(--success); }
+        
+        /* Responsive */
+        @media (max-width: 1280px) {
+            .streak-card {
+                grid-column: span 4;
+            }
+            .study-time-card {
+                grid-column: span 8;
+            }
+            .productivity-card {
+                grid-column: span 6;
+            }
+            .upcoming-tasks-card {
+                grid-column: span 6;
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            .streak-card {
+                grid-column: span 3;
+            }
+            .study-time-card {
+                grid-column: span 3;
+            }
+            .productivity-card {
+                grid-column: span 6;
+            }
+            .weekly-progress-card {
+                grid-column: span 6;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                /* Auto-collapse sidebar on mobile */
+                margin-left: 0;
+            }
+            body:not(.sidebar-active) {
+                margin-left: 0;
+            }
+            .sidebar {
+                transform: translateX(-280px);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .sidebar-toggle {
+                display: flex;
+            }
+            .main-content {
+                margin-left: 0;
+                max-width: 100%;
+            }
+            .dashboard-grid {
+                grid-template-columns: repeat(1, 1fr);
+            }
+            .streak-card, .study-time-card, .productivity-card,
+            .upcoming-tasks-card, .weekly-progress-card, .subject-progress-card,
+            .study-time-distribution-card, .productivity-trend-card {
+                grid-column: span 1;
+            }
+        }
+
+        /* Toggle switch for dark mode */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Dark mode styles - only applied when .dark-mode class is added to body */
+        body.dark-mode {
+            background: var(--darker);
+            color: var(--light);
+        }
+
+        body.dark-mode .main-content {
+            background: var(--darker);
+        }
+
+        body.dark-mode .card {
+            background: var(--dark);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        body.dark-mode .card-title, 
+        body.dark-mode .page-title,
+        body.dark-mode .user-name, 
+        body.dark-mode .time-value, 
+        body.dark-mode .subject-name, 
+        body.dark-mode .subject-percent,
+        body.dark-mode .task-title {
+            color: var(--light);
+        }
+
+        body.dark-mode .welcome-text, 
+        body.dark-mode .streak-label, 
+        body.dark-mode .time-label, 
+        body.dark-mode .score-description,
+        body.dark-mode .task-meta {
+            color: var(--gray);
+        }
+
+        body.dark-mode .task-item {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark-mode .task-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        body.dark-mode .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode .time-stat-item {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark-mode .user-profile, 
+        body.dark-mode .notification-btn {
+            background: var(--dark);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        body.dark-mode .notification-btn {
+            background: var(--dark);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        body.dark-mode .score-circle::before {
+            background: var(--dark);
+        }
+
+        /* List view styles */
+        .courses-grid.list-view {
+            display: block;
+        }
+        
+        .courses-grid.list-view .course-card {
+            display: grid;
+            grid-template-columns: 2fr 3fr 1fr;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0;
+        }
+        
+        .courses-grid.list-view .course-card-header {
+            padding: 1rem 1.25rem;
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom: none;
+        }
+        
+        .courses-grid.list-view .course-card-body {
+            display: flex;
+            align-items: center;
+        }
+        
+        .courses-grid.list-view .course-card-stats {
+            display: flex;
+            width: auto;
+            margin: 0 1rem 0 0;
+        }
+        
+        .courses-grid.list-view .course-stat {
+            margin-right: 1.5rem;
+        }
+        
+        .courses-grid.list-view .course-card-progress {
+            flex-grow: 1;
+            margin: 0;
+        }
+        
+        .courses-grid.list-view .course-card-footer {
+            border-top: none;
+            border-left: 1px solid rgba(0, 0, 0, 0.05);
+            justify-content: center;
+            height: 100%;
+        }
+        
+        .courses-grid.list-view .course-status {
+            display: none;
+        }
+        
+        /* Dark mode for list view */
+        body.dark-mode .courses-grid.list-view .course-card-header {
+            border-right-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        body.dark-mode .courses-grid.list-view .course-card-footer {
+            border-left-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Dark mode styles for learning dashboard */
+        body.dark-mode .learning-dashboard {
+            background: linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.95) 100%);
+            backdrop-filter: blur(10px);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        body.dark-mode .dashboard-title {
+            color: var(--light);
+        }
+        
+        body.dark-mode .course-tabs {
+            border-bottom-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        body.dark-mode .course-tab {
+            color: var(--gray);
+        }
+        
+        body.dark-mode .course-tab:hover {
+            color: var(--primary-light);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        body.dark-mode .course-tab.active {
+            color: var(--primary-light);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        body.dark-mode .action-btn {
+            color: var(--gray);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        body.dark-mode .action-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--primary-light);
+        }
+        
+        body.dark-mode .courses-wrapper {
+            background: var(--darker);
+        }
+        
+        body.dark-mode .course-card {
+            background: var(--dark);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        body.dark-mode .course-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        body.dark-mode .course-card-header {
+            border-bottom-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        body.dark-mode .course-card-title {
+            color: var(--light);
+        }
+        
+        body.dark-mode .stat-value {
+            color: var(--light);
+        }
+        
+        body.dark-mode .stat-label {
+            color: var(--gray);
+        }
+        
+        body.dark-mode .progress-bar-container {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        body.dark-mode .progress-text {
+            color: var(--gray);
+        }
+        
+        body.dark-mode .course-card-footer {
+            border-top-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        body.dark-mode .view-toggle-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        body.dark-mode .view-toggle-btn {
+            color: var(--gray);
+        }
+        
+        body.dark-mode .view-toggle-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+        
+        body.dark-mode .no-courses {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--gray);
+        }
+        
+        /* Status badges in dark mode */
+        body.dark-mode .status-completed {
+            background-color: rgba(22, 163, 74, 0.2);
+            color: #4ade80;
+        }
+        
+        body.dark-mode .status-ongoing {
+            background-color: rgba(79, 70, 229, 0.2);
+            color: #a5b4fc;
+        }
+        
+        body.dark-mode .status-not-started {
+            background-color: rgba(107, 114, 128, 0.2);
+            color: #d1d5db;
+        }
+
+        /* Set progress bar widths directly in CSS */
+        .subject-progress-item:nth-child(1) .progress-bar-fill {
+            width: 78%;
+        }
+        
+        .subject-progress-item:nth-child(2) .progress-bar-fill {
+            width: 65%;
+        }
+        
+        .subject-progress-item:nth-child(3) .progress-bar-fill {
+            width: 92%;
+        }
+        
+        .subject-progress-item:nth-child(4) .progress-bar-fill {
+            width: 45%;
+        }
+        
+        /* Subjects Grid */
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 20px;
+        }
+        
+        .subject-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .subject-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        
+        /* Loading Indicator */
+        .loading-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        /* Schedule Timeline */
+        .schedule-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 20px;
+        }
+        
+        /* Schedule Event */
+        .schedule-event {
+            display: flex;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .event-time {
+            padding: 1rem;
+            width: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-light);
+            color: white;
+        }
+        
+        .event-details {
+            padding: 1rem;
+            flex: 1;
+        }
+        
+        /* Tasks Styling */
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 20px;
+        }
+        
+        .chart-bar-fill {
+            height: 50px;
+        }
+        
+        /* Progress bar colors */
+        .progress-color-primary {
+            background-color: var(--primary);
+        }
+        
+        .progress-color-success {
+            background-color: var(--success);
+        }
+        
+        .progress-color-warning {
+            background-color: var(--warning);
+        }
+        
+        .progress-color-danger {
+            background-color: var(--danger);
+        }
+        
+        /* Modern Learning Platform Course Dashboard */
+        .learning-dashboard {
+            background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(249,250,251,0.9) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+            margin: 2rem 0;
+            padding: 2rem;
+            grid-column: span 12;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+        
+        .learning-dashboard::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            z-index: 1;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .dashboard-title-wrapper {
+            position: relative;
+        }
+        
+        .dashboard-subtitle {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+        
+        .dashboard-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #111827;
+            margin: 0;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dashboard-title::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40%;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+        
+        .dashboard-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .action-btn {
+            background: transparent;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 40px;
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-btn:hover {
+            background: #f9fafb;
+            color: var(--primary);
+            border-color: #ddd;
+        }
+        
+        .add-course-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        }
+        
+        .add-course-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.25);
+        }
+        
+        .add-course-btn:active {
+            transform: translateY(0);
+        }
+        
+        .course-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+        
+        .course-tab {
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #6b7280;
+            background: transparent;
+            border: none;
+        }
+        
+        .course-tab:hover {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .course-tab.active {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            font-weight: 600;
+        }
+        
+        .course-count {
+            font-size: 0.75rem;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            margin-left: 0.5rem;
+        }
+        
+        .courses-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .course-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            transition: all 0.3s;
+            border: 1px solid #f3f4f6;
+        }
+        
+        .course-card:hover {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-5px);
+        }
+        
+        .course-card-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid #f3f4f6;
+            position: relative;
+        }
+        
+        .course-card-subject {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .course-card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 0;
+            line-height: 1.4;
+        }
+        
+        .course-card-badge {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .course-card-body {
+            padding: 1.25rem;
+        }
+        
+        .course-card-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        
+        .course-stat {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .course-card-progress {
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar-container {
+            height: 8px;
+            background-color: #f3f4f6;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .progress-text {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        
+        .progress-percent {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .course-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #f3f4f6;
+            padding: 1rem 1.25rem;
+        }
+        
+        .course-status {
+            display: flex;
+            align-items: center;
+        }
+        
+        .course-status-badge {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 90px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        
+        .course-action-btn {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .course-action-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Status colors */
+        .status-completed {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .course-card-badge.status-completed,
+        .course-status-badge.status-completed {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .status-ongoing {
+            background-color: #e0e7ff;
+            color: #4f46e5;
+        }
+        
+        .course-card-badge.status-ongoing,
+        .course-status-badge.status-ongoing {
+            background-color: #e0e7ff;
+            color: #4f46e5;
+        }
+        
+        .status-not-started {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .course-card-badge.status-not-started,
+        .course-status-badge.status-not-started {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        /* Progress colors */
+        .progress-fill-high {
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+        }
+        
+        .progress-fill-medium {
+            background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
+        }
+        
+        .progress-fill-low {
+            background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+        }
+        
+        .progress-fill-none {
+            background: linear-gradient(90deg, #9ca3af 0%, #d1d5db 100%);
+        }
+        
+        .no-courses {
+            text-align: center;
+            color: #6b7280;
+            padding: 3rem 1rem !important;
+            font-size: 1rem;
+            background: #f9fafb;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+        }
+        
+        .no-courses i {
+            font-size: 3rem;
+            color: #d1d5db;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        /* View toggle button */
+        .view-toggle-wrapper {
+            display: flex;
+            background: #f3f4f6;
+            padding: 0.25rem;
+            border-radius: 8px;
+        }
+        
+        .view-toggle-btn {
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .view-toggle-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Error Message */
+        .error-message {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        /* External link styles */
+        .nav-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .external-link {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: var(--gray);
+            opacity: 0.5;
+            transition: all 0.3s;
+        }
+
+        .external-link:hover {
+            opacity: 1;
+            color: var(--primary-light);
+        }
+
+        .nav-link {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="logo-text">Study<span>Track</span></div>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">Main Menu</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard/" class="nav-link active">
+                        <div class="nav-icon"><i class="fas fa-chart-line"></i></div>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/subjects/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-book"></i></div>
+                        <span class="nav-text">Subjects</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/schedule/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-calendar"></i></div>
+                        <span class="nav-text">Schedule</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/tasks/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-tasks"></i></div>
+                        <span class="nav-text">Tasks</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">Analytics</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/insights/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-lightbulb"></i></div>
+                        <span class="nav-text">Insights</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/peer-comparison/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-users"></i></div>
+                        <span class="nav-text">Peer Comparison</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        {% if is_admin %}
+        <div class="nav-section">
+            <div class="nav-title">Administration</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/admin-dashboard/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-user-shield"></i></div>
+                        <span class="nav-text">Admin Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/add-student/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-user-plus"></i></div>
+                        <span class="nav-text">Add Student</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+        
+        <div class="nav-section mt-auto">
+            <div class="nav-title">Account</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/settings/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-cog"></i></div>
+                        <span class="nav-text">Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/how-it-works/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-question-circle"></i></div>
+                        <span class="nav-text">Help</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/logout/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-sign-out-alt"></i></div>
+                        <span class="nav-text">Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <div>
+                <h1 class="page-title">Dashboard</h1>
+                <p class="welcome-text">Welcome back, {{ user.first_name }}! Here's your study progress.</p>
+            </div>
+            <div class="user-menu">
+                <label class="switch" id="darkModeToggle">
+                    <input type="checkbox" id="darkModeCheckbox">
+                    <span class="slider"></span>
+                </label>
+                <button class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <div class="notification-badge">3</div>
+                </button>
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        {% if user.first_name %}
+                            {{ user.first_name.0 }}{{ user.last_name.0 }}
+                        {% else %}
+                            <i class="fas fa-user"></i>
+                        {% endif %}
+                    </div>
+                    <div class="user-name">{{ user.first_name }} {{ user.last_name }}</div>
+                </div>
+            </div>
+        </div>
+        
+        {% if is_admin %}
+        <!-- Admin Dashboard Section -->
+        <div id="admin-dashboard-section" class="content-section mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="card-title">Admin Dashboard - Student Management</h2>
+                    <button id="add-student-btn" class="btn" style="background-color: var(--primary); color: white;">
+                        <i class="fas fa-plus"></i> New Student
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Student ID</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Department</th>
+                                <th>Year</th>
+                                <th>Semester</th>
+                                <th>Enrollment Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if students %}
+                                {% for student in students %}
+                                <tr>
+                                    <td>{{ student.id }}</td>
+                                    <td>{{ student.name }}</td>
+                                    <td>{{ student.student_id }}</td>
+                                    <td>{{ student.email }}</td>
+                                    <td>{{ student.phone }}</td>
+                                    <td>{{ student.department }}</td>
+                                    <td>{{ student.year }}</td>
+                                    <td>{{ student.semester }}</td>
+                                    <td>{{ student.enrollment_date }}</td>
+                                    <td>
+                                        <button class="btn btn-sm edit-btn" style="background-color: var(--secondary); color: white;">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm delete-btn" style="background-color: var(--danger); color: white;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="10" class="text-center">No students found. Add a new student to get started.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="content-section">
+            <div class="dashboard-grid" id="main-dashboard-content">
+            <!-- Streak card -->
+            <div class="card streak-card">
+                <div class="card-header">
+                    <h2 class="card-title">Study Streak</h2>
+                </div>
+                <div class="streak-counter">
+                    <i class="fas fa-fire" style="color: var(--warning);"></i>
+                    {{ study_data.streak_count|default:"7" }}
+                </div>
+                <p class="streak-label">Keep it up! You're on a roll.</p>
+            </div>
+            
+            <!-- Study time card -->
+            <div class="card study-time-card">
+                <div class="card-header">
+                    <h2 class="card-title">Study Time</h2>
+                    <button class="card-action">This week <i class="fas fa-chevron-down"></i></button>
+                </div>
+                <div class="time-stats">
+                    <div class="time-stat-item">
+                        <div class="time-value">{{ study_data.today_hours|default:"2.5h" }}</div>
+                        <div class="time-label">Today</div>
+                    </div>
+                    <div class="time-stat-item">
+                        <div class="time-value">{{ study_data.week_hours|default:"12h" }}</div>
+                        <div class="time-label">This week</div>
+                    </div>
+                    <div class="time-stat-item">
+                        <div class="time-value">{{ study_data.month_hours|default:"48h" }}</div>
+                        <div class="time-label">This month</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Productivity card -->
+            <div class="card productivity-card">
+                <div class="card-header">
+                    <h2 class="card-title">Productivity Score</h2>
+                    <button class="card-action">View details</button>
+                </div>
+                <div class="score-display">
+                    <div class="score-circle">
+                        <div class="score-value">{{ study_data.productivity_score|default:"85" }}</div>
+                    </div>
+                    <div class="score-details">
+                        <h3 class="score-title">Very Good!</h3>
+                        <p class="score-description">Your focus and productivity levels are above average. Keep up the great work!</p>
+                    </div>
+                </div>
+            </div>
+            
+
+            
+            <!-- Upcoming tasks -->
+            <div class="card upcoming-tasks-card">
+                <div class="card-header">
+                    <h2 class="card-title">Upcoming Tasks</h2>
+                    <button class="card-action">View all</button>
+                </div>
+                <div class="task-list">
+                    {% for task in study_data.upcoming_tasks %}
+                    <div class="task-item">
+                        <div class="task-checkbox {% if task.completed %}checked{% endif %}">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="task-content">
+                            <div class="task-title">{{ task.title }}</div>
+                            <div class="task-meta">
+                                <div class="task-meta-item">
+                                    <i class="far fa-calendar"></i>
+                                    <span>{{ task.due_date }}</span>
+                                </div>
+                                <div class="task-meta-item">
+                                    <i class="far fa-clock"></i>
+                                    <span>{{ task.estimated_time }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="task-priority priority-{{ task.priority }}">{{ task.priority|title }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="task-item">
+                        <div class="task-checkbox">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="task-content">
+                            <div class="task-title">Complete Calculus Assignment</div>
+                            <div class="task-meta">
+                                <div class="task-meta-item">
+                                    <i class="far fa-calendar"></i>
+                                    <span>Today</span>
+                                </div>
+                                <div class="task-meta-item">
+                                    <i class="far fa-clock"></i>
+                                    <span>2 hours</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="task-priority priority-high">High</div>
+                    </div>
+                    <div class="task-item">
+                        <div class="task-checkbox">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="task-content">
+                            <div class="task-title">Physics Lab Report</div>
+                            <div class="task-meta">
+                                <div class="task-meta-item">
+                                    <i class="far fa-calendar"></i>
+                                    <span>Tomorrow</span>
+                                </div>
+                                <div class="task-meta-item">
+                                    <i class="far fa-clock"></i>
+                                    <span>3 hours</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="task-priority priority-medium">Medium</div>
+                    </div>
+                    <div class="task-item">
+                        <div class="task-checkbox checked">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="task-content">
+                            <div class="task-title">Review History Notes</div>
+                            <div class="task-meta">
+                                <div class="task-meta-item">
+                                    <i class="far fa-calendar"></i>
+                                    <span>Sep 21</span>
+                                </div>
+                                <div class="task-meta-item">
+                                    <i class="far fa-clock"></i>
+                                    <span>1 hour</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="task-priority priority-low">Low</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Modern Learning Dashboard -->
+            <div class="learning-dashboard">
+                <div class="dashboard-header">
+                    <h1 class="dashboard-title">
+                        <i class="fas fa-graduation-cap"></i>
+                        My Learning
+                    </h1>
+                    <div class="dashboard-actions">
+                        <button class="action-btn">
+                            <i class="fas fa-plus"></i>
+                            Add Course
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-filter"></i>
+                            Filter
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="course-tabs">
+                    <button class="course-tab active">All Courses</button>
+                    <button class="course-tab">In Progress</button>
+                    <button class="course-tab">Completed</button>
+                    <button class="course-tab">Not Started</button>
+                    
+                    <div class="view-toggle-wrapper">
+                        <button class="view-toggle-btn active" data-view="grid">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button class="view-toggle-btn" data-view="list">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="courses-wrapper">
+                    <div class="courses-grid">
+                        {% for course in user_courses %}
+                        <div class="course-card">
+                            <div class="course-card-header">
+                                <span class="course-card-badge 
+                                    {% if course.status == 'completed' %}bg-success
+                                    {% elif course.status == 'ongoing' %}bg-primary
+                                    {% else %}bg-gray{% endif %}">
+                                    {{ course.status_display }}
+                                </span>
+                                <h3 class="course-card-title">{{ course.name }}</h3>
+                                <p class="course-card-dates">{{ course.start_date|date:"d M Y" }} - {{ course.end_date|date:"d M Y" }}</p>
+                            </div>
+                            <div class="course-card-body">
+                                <div class="course-card-stats">
+                                    <div class="course-stat">
+                                        <span class="stat-label">Hours Spent</span>
+                                        <span class="stat-value">{{ course.hours_spent }} hrs</span>
+                                    </div>
+                                    <div class="course-stat">
+                                        <span class="stat-label">Completion</span>
+                                        <span class="stat-value">{{ course.completion_percentage }}%</span>
+                                    </div>
+                                </div>
+                                <div class="course-card-progress">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill 
+                                            {% if course.status == 'completed' %}bg-success
+                                            {% elif course.status == 'ongoing' %}bg-primary
+                                            {% else %}bg-gray{% endif %}"
+                                            data-width="{{ course.completion_percentage }}">
+                                        </div>
+                                    </div>
+                                    <div class="progress-label">
+                                        <span class="progress-text">Progress</span>
+                                        <span class="progress-percent">{{ course.completion_percentage }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="course-card-footer">
+                                <div class="course-status">
+                                    <span class="course-status-badge status-{{ course.status }}">{{ course.status_display }}</span>
+                                </div>
+                                <a href="{% url 'course_detail' student_id=course.id %}" class="course-action-btn">
+                                    {% if course.status == 'completed' %}
+                                        Review
+                                    {% elif course.status == 'ongoing' %}
+                                        Continue
+                                    {% else %}
+                                        Start
+                                    {% endif %}
+                                </a>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="no-courses">
+                            <i class="fas fa-book-open fa-2x"></i>
+                            <p>No courses available. Add a course to get started.</p>
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- Example courses if none are provided -->
+                        {% if not user_courses %}
+                        <!-- Advanced Java Programming Course -->
+                        <div class="course-card">
+                            <div class="course-card-header">
+                                <span class="course-card-badge bg-primary">Ongoing</span>
+                                <h3 class="course-card-title">Advanced Java Programming - Spring Boot</h3>
+                                <p class="course-card-dates">10 Sep 2025 - 20 Dec 2025</p>
+                            </div>
+                            <div class="course-card-body">
+                                <div class="course-card-stats">
+                                    <div class="course-stat">
+                                        <span class="stat-label">Hours Spent</span>
+                                        <span class="stat-value">42.5 hrs</span>
+                                    </div>
+                                    <div class="course-stat">
+                                        <span class="stat-label">Completion</span>
+                                        <span class="stat-value">65%</span>
+                                    </div>
+                                </div>
+                                <div class="course-card-progress">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill bg-primary" style="width: 65%"></div>
+                                    </div>
+                                    <div class="progress-label">
+                                        <span class="progress-text">Progress</span>
+                                        <span class="progress-percent">65%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="course-card-footer">
+                                <div class="course-status">
+                                    <span class="course-status-badge status-ongoing">Ongoing</span>
+                                </div>
+                                <a href="{% url 'course_detail' student_id=1001 %}" class="course-action-btn">Continue</a>
+                            </div>
+                        </div>
+                        
+                        <!-- Physics Course -->
+                        <div class="course-card">
+                            <div class="course-card-header">
+                                <span class="course-card-badge bg-primary">Ongoing</span>
+                                <h3 class="course-card-title">Data Science Fundamentals - Machine Learning</h3>
+                                <p class="course-card-dates">5 Aug 2025 - 15 Nov 2025</p>
+                            </div>
+                            <div class="course-card-body">
+                                <div class="course-card-stats">
+                                    <div class="course-stat">
+                                        <span class="stat-label">Hours Spent</span>
+                                        <span class="stat-value">28.0 hrs</span>
+                                    </div>
+                                    <div class="course-stat">
+                                        <span class="stat-label">Completion</span>
+                                        <span class="stat-value">40%</span>
+                                    </div>
+                                </div>
+                                <div class="course-card-progress">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill bg-primary" style="width: 40%"></div>
+                                    </div>
+                                    <div class="progress-label">
+                                        <span class="progress-text">Progress</span>
+                                        <span class="progress-percent">40%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="course-card-footer">
+                                <div class="course-status">
+                                    <span class="course-status-badge status-ongoing">Ongoing</span>
+                                </div>
+                                <a href="{% url 'course_detail' student_id=1002 %}" class="course-action-btn">Continue</a>
+                            </div>
+                        </div>
+                        
+                        <!-- Web Development Course -->
+                        <div class="course-card">
+                            <div class="course-card-header">
+                                <span class="course-card-badge bg-success">Completed</span>
+                                <h3 class="course-card-title">Web Development - React & Next.js</h3>
+                                <p class="course-card-dates">15 Jun 2025 - 25 Sep 2025</p>
+                            </div>
+                            <div class="course-card-body">
+                                <div class="course-card-stats">
+                                    <div class="course-stat">
+                                        <span class="stat-label">Hours Spent</span>
+                                        <span class="stat-value">56.0 hrs</span>
+                                    </div>
+                                    <div class="course-stat">
+                                        <span class="stat-label">Completion</span>
+                                        <span class="stat-value">100%</span>
+                                    </div>
+                                </div>
+                                <div class="course-card-progress">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill bg-success" style="width: 100%"></div>
+                                    </div>
+                                    <div class="progress-label">
+                                        <span class="progress-text">Progress</span>
+                                        <span class="progress-percent">100%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="course-card-footer">
+                                <div class="course-status">
+                                    <span class="course-status-badge status-completed">Completed</span>
+                                </div>
+                                <a href="{% url 'course_detail' student_id=1003 %}" class="course-action-btn">Review</a>
+                            </div>
+                        </div>
+                        
+                        <!-- Cloud Computing Course -->
+                        <div class="course-card">
+                            <div class="course-card-header">
+                                <span class="course-card-badge bg-primary">Ongoing</span>
+                                <h3 class="course-card-title">Cloud Computing - AWS & Azure</h3>
+                                <p class="course-card-dates">01 Aug 2025 - 30 Nov 2025</p>
+                            </div>
+                            <div class="course-card-body">
+                                <div class="course-card-stats">
+                                    <div class="course-stat">
+                                        <span class="stat-label">Hours Spent</span>
+                                        <span class="stat-value">12.5 hrs</span>
+                                    </div>
+                                    <div class="course-stat">
+                                        <span class="stat-label">Completion</span>
+                                        <span class="stat-value">20%</span>
+                                    </div>
+                                </div>
+                                <div class="course-card-progress">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill bg-primary" style="width: 20%"></div>
+                                    </div>
+                                    <div class="progress-label">
+                                        <span class="progress-text">Progress</span>
+                                        <span class="progress-percent">20%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="course-card-footer">
+                                <div class="course-status">
+                                    <span class="course-status-badge status-ongoing">Ongoing</span>
+                                </div>
+                                <a href="{% url 'course_detail' student_id=1004 %}" class="course-action-btn">Continue</a>
+                            </div>
+                        </div>
+                        
+                        <!-- Software Engineering Course -->
+                        <div class="course-card">
+                            <div class="course-card-header">
+                                <span class="course-card-badge bg-gray">Not Started</span>
+                                <h3 class="course-card-title">Software Engineering</h3>
+                                <p class="course-card-dates">01 Oct 2025 - 15 Jan 2026</p>
+                            </div>
+                            <div class="course-card-body">
+                                <div class="course-card-stats">
+                                    <div class="course-stat">
+                                        <span class="stat-label">Hours Spent</span>
+                                        <span class="stat-value">0 hrs</span>
+                                    </div>
+                                    <div class="course-stat">
+                                        <span class="stat-label">Completion</span>
+                                        <span class="stat-value">0%</span>
+                                    </div>
+                                </div>
+                                <div class="course-card-progress">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill bg-gray" style="width: 0%"></div>
+                                    </div>
+                                    <div class="progress-label">
+                                        <span class="progress-text">Progress</span>
+                                        <span class="progress-percent">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="course-card-footer">
+                                <div class="course-status">
+                                    <span class="course-status-badge status-not-started">Not Started</span>
+                                </div>
+                                <a href="{% url 'course_detail' student_id=1005 %}" class="course-action-btn">Start</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+
+            
+            <!-- Study time distribution chart -->
+            <div class="card study-time-distribution-card">
+                <div class="card-header">
+                    <h2 class="card-title">Study Time Distribution</h2>
+                </div>
+                <div class="chart-container">
+                    <!-- Static representation of pie chart -->
+                    <div style="position: relative; height: 100%; display: flex; justify-content: center; align-items: center;">
+                        <div style="position: relative; width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(
+                            rgba(99, 102, 241, 0.7) 0% 30%, 
+                            rgba(20, 184, 166, 0.7) 30% 50%, 
+                            rgba(245, 158, 11, 0.7) 50% 75%, 
+                            rgba(16, 185, 129, 0.7) 75% 90%, 
+                            rgba(239, 68, 68, 0.7) 90% 100%
+                        );"></div>
+                    </div>
+                    <!-- Static legend -->
+                    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 20px;">
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <div style="width: 12px; height: 12px; background: rgba(99, 102, 241, 0.7); border-radius: 2px;"></div>
+                            <span style="font-size: 12px; color: var(--gray);">Advanced Java Programming (30%)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <div style="width: 12px; height: 12px; background: rgba(20, 184, 166, 0.7); border-radius: 2px;"></div>
+                            <span style="font-size: 12px; color: var(--gray);">Data Science Fundamentals (20%)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <div style="width: 12px; height: 12px; background: rgba(245, 158, 11, 0.7); border-radius: 2px;"></div>
+                            <span style="font-size: 12px; color: var(--gray);">Web Development (25%)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <div style="width: 12px; height: 12px; background: rgba(16, 185, 129, 0.7); border-radius: 2px;"></div>
+                            <span style="font-size: 12px; color: var(--gray);">Cloud Computing (15%)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <div style="width: 12px; height: 12px; background: rgba(239, 68, 68, 0.7); border-radius: 2px;"></div>
+                            <span style="font-size: 12px; color: var(--gray);">History (10%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Productivity trend chart -->
+            <div class="card productivity-trend-card">
+                <div class="card-header">
+                    <h2 class="card-title">Productivity Trend</h2>
+                </div>
+                <div class="chart-container">
+                    <!-- Static line chart representation -->
+                    <div style="height: 100%; position: relative; padding: 20px 0;">
+                        <svg width="100%" height="100%" viewBox="0 0 600 200" preserveAspectRatio="none">
+                            <polyline points="0,120 100,105 200,140 300,85 400,60 500,45 600,75" 
+                                    fill="none" 
+                                    stroke="rgba(16, 185, 129, 1)" 
+                                    stroke-width="3" />
+                            <path d="M0,120 L100,105 L200,140 L300,85 L400,60 L500,45 L600,75 V200 H0 Z" 
+                                  fill="rgba(16, 185, 129, 0.2)" />
+                        </svg>
+                        <!-- Axis labels -->
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-between; padding: 0 10px;">
+                            <span style="font-size: 12px; color: var(--gray);">Mon</span>
+                            <span style="font-size: 12px; color: var(--gray);">Tue</span>
+                            <span style="font-size: 12px; color: var(--gray);">Wed</span>
+                            <span style="font-size: 12px; color: var(--gray);">Thu</span>
+                            <span style="font-size: 12px; color: var(--gray);">Fri</span>
+                            <span style="font-size: 12px; color: var(--gray);">Sat</span>
+                            <span style="font-size: 12px; color: var(--gray);">Sun</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End of Dashboard Section -->
+        
+        <!-- Subjects Section -->
+        <div id="subjects-section" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h1 class="page-title">My Subjects</h1>
+                <p class="welcome-text">Manage your subjects and their progress</p>
+            </div>
+            <div class="subjects-container">
+                <!-- This will be populated with AJAX -->
+                <div class="loading-indicator">Loading subjects data...</div>
+            </div>
+        </div>
+        
+        <!-- Schedule Section -->
+        <div id="schedule-section" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h1 class="page-title">Study Schedule</h1>
+                <p class="welcome-text">Your personalized study timetable</p>
+            </div>
+            <div class="schedule-container">
+                <!-- This will be populated with AJAX -->
+                <div class="loading-indicator">Loading schedule data...</div>
+            </div>
+        </div>
+        
+        <!-- Tasks Section -->
+        <div id="tasks-section" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h1 class="page-title">Tasks & Assignments</h1>
+                <p class="welcome-text">Track your pending and completed tasks</p>
+            </div>
+            <div class="tasks-container">
+                <!-- This will be populated with AJAX -->
+                <div class="loading-indicator">Loading tasks data...</div>
+            </div>
+        </div>
+        
+        <!-- Progress Section -->
+        <div id="progress-section" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h1 class="page-title">My Progress</h1>
+                <p class="welcome-text">Track your learning journey</p>
+            </div>
+            <div class="progress-container">
+                <!-- This will be populated with AJAX -->
+                <div class="loading-indicator">Loading progress data...</div>
+            </div>
+        </div>
+        
+        <!-- Insights Section -->
+        <div id="insights-section" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h1 class="page-title">AI Insights</h1>
+                <p class="welcome-text">Personalized learning recommendations</p>
+            </div>
+            <div class="insights-container">
+                <!-- This will be populated with AJAX -->
+                <div class="loading-indicator">Loading insights data...</div>
+            </div>
+        </div>
+        
+        <!-- Peer Comparison Section -->
+        <div id="peer-comparison-section" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h1 class="page-title">Peer Comparison</h1>
+                <p class="welcome-text">See how you compare to your peers</p>
+            </div>
+            <div class="peer-comparison-container">
+                <!-- This will be populated with AJAX -->
+                <div class="loading-indicator">Loading peer comparison data...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // JavaScript for handling navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+            
+            // Function to show a specific section and hide others
+            function showSection(sectionId) {
+                sections.forEach(section => {
+                    section.style.display = 'none';
+                });
+                document.getElementById(sectionId).style.display = 'block';
+                
+                // Update active state in navigation
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Load section content via AJAX if needed
+                loadSectionContent(sectionId);
+            }
+            
+            // Let navigation links navigate normally - don't prevent default
+            // This ensures links work correctly
+            navLinks.forEach(link => {
+                // We rely on the href attribute to navigate, not preventing default
+            });
+            
+            // Show dashboard section by default
+            showSection('dashboard-section');
+            
+            // Function to load section content via AJAX
+            function loadSectionContent(sectionId) {
+                // Skip loading for dashboard as it's already loaded
+                if (sectionId === 'dashboard-section') return;
+                
+                const sectionElement = document.getElementById(sectionId);
+                console.log('Section element:', sectionElement);
+                
+                const container = sectionElement.querySelector('div[class$="-container"]');
+                console.log('Container element:', container, 'for selector:', `div[class$="-container"]`);
+                
+                // Show loading indicator
+                container.innerHTML = '<div class="loading-indicator">Loading data...</div>';
+                
+                // Map section IDs to their respective section names for the dashboard endpoint
+                const sectionMap = {
+                    'subjects-section': 'subjects',
+                    'schedule-section': 'schedule',
+                    'tasks-section': 'tasks',
+                    'progress-section': 'insights', // Progress view has been removed - use insights instead
+                    'insights-section': 'insights',
+                    'peer-comparison-section': 'peer-comparison'
+                };
+                
+                // Map section IDs to their respective URLs
+                const endpointMap = {
+                    'subjects-section': '{% url "subjects" %}',
+                    'schedule-section': '{% url "schedule" %}',
+                    'tasks-section': '{% url "tasks" %}',
+                    // Progress view has been removed - use insights instead
+                    'progress-section': '{% url "insights" %}',
+                    'insights-section': '{% url "insights" %}',
+                    'peer-comparison-section': '{% url "peer_comparison" %}'
+                };
+                
+                // Use direct URLs with format=json parameter
+                const fetchUrl = endpointMap[sectionId] + '?format=json';
+                console.log('Fetching content from:', fetchUrl);
+                
+                // Fetch content via AJAX
+                fetch(fetchUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Received data for section:', sectionId, data);
+                        // Add detailed logging for data structure
+                        console.log('Data keys:', Object.keys(data));
+                        console.log('Data structure:', JSON.stringify(data, null, 2));
+                        // Render the data (you'll need to customize this for each section)
+                        renderSectionContent(sectionId, data, container);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching section data:', error);
+                        container.innerHTML = `<div class="error-message">Failed to load content: ${error.message}</div>`;
+                    });
+            }
+            
+            // Function to render section content based on the data received
+            function renderSectionContent(sectionId, data, container) {
+                console.log('Rendering content for:', sectionId);
+                console.log('Container:', container);
+                let html = '';
+                
+                switch(sectionId) {
+                    case 'subjects-section':
+                        console.log('Rendering subjects section with data:', data.subjects);
+                        // For now, let's just show a placeholder with the data
+                        html = '<div class="subjects-grid">';
+                        if (data.subjects && data.subjects.length > 0) {
+                            data.subjects.forEach(subject => {
+                                html += `
+                                    <div class="subject-card">
+                                        <div class="subject-header">
+                                            <h3>${subject.name}</h3>
+                                            <div class="subject-icon icon-${subject.color}">
+                                                <i class="${subject.icon}"></i>
+                                            </div>
+                                        </div>
+                                        <div class="subject-progress">
+                                            <div class="progress-bar">
+                                                <div class="progress-bar-fill ${subject.color}" style="width: ${subject.progress}%"></div>
+                                            </div>
+                                            <div class="subject-percent">${subject.progress}%</div>
+                                        </div>
+                                        <div class="subject-details">
+                                            <p>Topics: ${subject.topics}</p>
+                                            <p>Last studied: ${subject.last_studied}</p>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            html += '<p>No subjects found. Add some subjects to get started!</p>';
+                        }
+                        html += '</div>';
+                        break;
+                        
+                    case 'schedule-section':
+                        if (data.schedule_data) {
+                            const scheduleData = data.schedule_data;
+                            html = `
+                                <div class="schedule-header">
+                                    <h2>${scheduleData.weekday}'s Schedule</h2>
+                                    <p class="date">${scheduleData.today}</p>
+                                </div>
+                                <div class="schedule-timeline">
+                            `;
+                            
+                            if (scheduleData.events && scheduleData.events.length > 0) {
+                                scheduleData.events.forEach(event => {
+                                    html += `
+                                        <div class="schedule-event priority-${event.priority}">
+                                            <div class="event-time">
+                                                <p>${event.start_time} - ${event.end_time}</p>
+                                            </div>
+                                            <div class="event-details">
+                                                <h3>${event.subject}</h3>
+                                                <p>${event.topic}</p>
+                                            </div>
+                                        </div>
+                                    `;
+                                });
+                            } else {
+                                html += '<p class="empty-schedule">No events scheduled for today.</p>';
+                            }
+                            
+                            html += '</div>';
+                        } else {
+                            html = '<p>No schedule data available.</p>';
+                        }
+                        break;
+                        
+                    case 'tasks-section':
+                        if (data.tasks_data) {
+                            const tasksData = data.tasks_data;
+                            html = `
+                                <div class="tasks-grid">
+                                    <div class="pending-tasks">
+                                        <h2>Pending Tasks</h2>
+                                        <div class="task-list">
+                            `;
+                            
+                            if (tasksData.pending_tasks && tasksData.pending_tasks.length > 0) {
+                                tasksData.pending_tasks.forEach(task => {
+                                    html += `
+                                        <div class="task-item priority-${task.priority}">
+                                            <div class="task-header">
+                                                <h3>${task.title}</h3>
+                                                <span class="task-subject">${task.subject}</span>
+                                            </div>
+                                            <div class="task-progress">
+                                                <div class="progress-bar">
+                                                    <div class="progress-bar-fill" style="width: ${task.progress}%"></div>
+                                                </div>
+                                                <span>${task.progress}%</span>
+                                            </div>
+                                            <div class="task-footer">
+                                                <span class="due-date">Due: ${task.due_date}</span>
+                                            </div>
+                                        </div>
+                                    `;
+                                });
+                            } else {
+                                html += '<p class="empty-tasks">No pending tasks.</p>';
+                            }
+                            
+                            html += `
+                                        </div>
+                                    </div>
+                                    <div class="completed-tasks">
+                                        <h2>Completed Tasks</h2>
+                                        <div class="task-list">
+                            `;
+                            
+                            if (tasksData.completed_tasks && tasksData.completed_tasks.length > 0) {
+                                tasksData.completed_tasks.forEach(task => {
+                                    html += `
+                                        <div class="task-item completed">
+                                            <div class="task-header">
+                                                <h3>${task.title}</h3>
+                                                <span class="task-subject">${task.subject}</span>
+                                            </div>
+                                            <div class="task-footer">
+                                                <span class="completed-date">Completed: ${task.completed_date}</span>
+                                            </div>
+                                        </div>
+                                    `;
+                                });
+                            } else {
+                                html += '<p class="empty-tasks">No completed tasks.</p>';
+                            }
+                            
+                            html += `
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            html = '<p>No tasks data available.</p>';
+                        }
+                        break;
+                        
+                    case 'progress-section':
+                        // This now redirects to insights, but we'll keep the legacy handler
+                        if (data.study_data) {
+                            const studyData = data.study_data;
+                            html = `
+                                <div class="progress-overview">
+                                    <div class="stats-card">
+                                        <h3>Total Study Hours</h3>
+                                        <p class="stat-value">${studyData.total_hours} hours</p>
+                                    </div>
+                                    <div class="stats-card">
+                                        <h3>Completion Rate</h3>
+                                        <p class="stat-value">${studyData.completion_rate}%</p>
+                                    </div>
+                                    <div class="stats-card">
+                                        <h3>Current Streak</h3>
+                                        <p class="stat-value">${studyData.streak_days || studyData.streak_count} days</p>
+                                    </div>
+                                    <div class="stats-card">
+                                        <h3>Topics Mastered</h3>
+                                        <p class="stat-value">${studyData.topics_mastered}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-charts">
+                                    <div class="chart-container">
+                                        <h3>Weekly Progress</h3>
+                                        <div class="weekly-chart">
+                                            ${renderWeeklyProgressChart(studyData.weekly_progress)}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            html = '<p>No progress data available.</p>';
+                        }
+                        break;
+                        
+                    case 'insights-section':
+                        if (data.insights_data) {
+                            const insightsData = data.insights_data;
+                            html = `
+                                <div class="insights-container">
+                                    <div class="insight-profile">
+                                        <h2>Your Learning Profile</h2>
+                                        <div class="learning-stats">
+                                            <div class="learning-stat">
+                                                <h3>Learning Style</h3>
+                                                <p>${insightsData.learning_style}</p>
+                                            </div>
+                                            <div class="learning-stat">
+                                                <h3>Optimal Study Time</h3>
+                                                <p>${insightsData.optimal_study_time}</p>
+                                            </div>
+                                            <div class="learning-stat">
+                                                <h3>Attention Span</h3>
+                                                <p>${insightsData.attention_span}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="strengths-weaknesses">
+                                        <div class="strengths">
+                                            <h3>Your Strengths</h3>
+                                            <ul>
+                                                ${insightsData.strengths.map(strength => `<li>${strength}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                        <div class="weaknesses">
+                                            <h3>Areas for Improvement</h3>
+                                            <ul>
+                                                ${insightsData.weaknesses.map(weakness => `<li>${weakness}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="ai-recommendations">
+                                        <h2>Personalized Recommendations</h2>
+                                        <div class="recommendations-list">
+                                            ${insightsData.recommendations.map(rec => `
+                                                <div class="recommendation-card priority-${rec.priority.toLowerCase().split(' ')[0]}">
+                                                    <div class="recommendation-header">
+                                                        <h3>${rec.title}</h3>
+                                                        <span class="priority-badge">${rec.priority}</span>
+                                                    </div>
+                                                    <p>${rec.content}</p>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            html = '<p>No insights data available.</p>';
+                        }
+                        break;
+                        
+                    case 'peer-comparison-section':
+                        if (data.comparison_data) {
+                            const compData = data.comparison_data;
+                            html = `
+                                <div class="comparison-container">
+                                    <div class="comparison-overview">
+                                        <div class="comparison-card">
+                                            <h3>Study Hours</h3>
+                                            <div class="comparison-bars">
+                                                <div class="comparison-bar">
+                                                    <span class="label">You</span>
+                                                    <div class="bar-container">
+                                                        <div class="bar you" style="width: ${(compData.study_hours.user / compData.study_hours.top_performers * 100)}%"></div>
+                                                    </div>
+                                                    <span class="value">${compData.study_hours.user}h</span>
+                                                </div>
+                                                <div class="comparison-bar">
+                                                    <span class="label">Average</span>
+                                                    <div class="bar-container">
+                                                        <div class="bar average" style="width: ${(compData.study_hours.average / compData.study_hours.top_performers * 100)}%"></div>
+                                                    </div>
+                                                    <span class="value">${compData.study_hours.average}h</span>
+                                                </div>
+                                                <div class="comparison-bar">
+                                                    <span class="label">Top</span>
+                                                    <div class="bar-container">
+                                                        <div class="bar top" style="width: 100%"></div>
+                                                    </div>
+                                                    <span class="value">${compData.study_hours.top_performers}h</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="comparison-card">
+                                            <h3>Completion Rate</h3>
+                                            <div class="comparison-bars">
+                                                <div class="comparison-bar">
+                                                    <span class="label">You</span>
+                                                    <div class="bar-container">
+                                                        <div class="bar you" style="width: ${(compData.completion_rate.user / compData.completion_rate.top_performers * 100)}%"></div>
+                                                    </div>
+                                                    <span class="value">${compData.completion_rate.user}%</span>
+                                                </div>
+                                                <div class="comparison-bar">
+                                                    <span class="label">Average</span>
+                                                    <div class="bar-container">
+                                                        <div class="bar average" style="width: ${(compData.completion_rate.average / compData.completion_rate.top_performers * 100)}%"></div>
+                                                    </div>
+                                                    <span class="value">${compData.completion_rate.average}%</span>
+                                                </div>
+                                                <div class="comparison-bar">
+                                                    <span class="label">Top</span>
+                                                    <div class="bar-container">
+                                                        <div class="bar top" style="width: 100%"></div>
+                                                    </div>
+                                                    <span class="value">${compData.completion_rate.top_performers}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="subject-comparisons">
+                                        <h2>Subject Performance Comparison</h2>
+                                        <div class="subject-comparison-list">
+                                            ${compData.subjects.map(subject => `
+                                                <div class="subject-comparison-card">
+                                                    <h3>${subject.name}</h3>
+                                                    <div class="comparison-bars">
+                                                        <div class="comparison-bar">
+                                                            <span class="label">You</span>
+                                                            <div class="bar-container">
+                                                                <div class="bar you" style="width: ${(subject.user_score / subject.top_performers_score * 100)}%"></div>
+                                                            </div>
+                                                            <span class="value">${subject.user_score}%</span>
+                                                        </div>
+                                                        <div class="comparison-bar">
+                                                            <span class="label">Average</span>
+                                                            <div class="bar-container">
+                                                                <div class="bar average" style="width: ${(subject.average_score / subject.top_performers_score * 100)}%"></div>
+                                                            </div>
+                                                            <span class="value">${subject.average_score}%</span>
+                                                        </div>
+                                                        <div class="comparison-bar">
+                                                            <span class="label">Top</span>
+                                                            <div class="bar-container">
+                                                                <div class="bar top" style="width: 100%"></div>
+                                                            </div>
+                                                            <span class="value">${subject.top_performers_score}%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            html = '<p>No comparison data available.</p>';
+                        }
+                        break;
+                        
+                    default:
+                        html = `<p>Content for ${sectionId} is being developed.</p>`;
+                }
+                
+                container.innerHTML = html;
+            }
+            
+            // Helper function to render weekly progress chart
+            function renderWeeklyProgressChart(weeklyData) {
+                if (!weeklyData || weeklyData.length === 0) {
+                    return '<div class="no-data">No weekly progress data available</div>';
+                }
+                
+                let maxHours = Math.max(...weeklyData.map(day => day[1]));
+                let chartHtml = '<div class="chart-bars">';
+                
+                weeklyData.forEach(day => {
+                    const dayName = day[0];
+                    const hours = day[1];
+                    const percentage = (hours / maxHours * 100).toFixed(0);
+                    
+                    chartHtml += `
+                        <div class="chart-bar">
+                            <div class="bar-value">${hours}h</div>
+                            <div class="bar-fill" style="height: ${percentage}%"></div>
+                            <div class="bar-label">${dayName}</div>
+                        </div>
+                    `;
+                });
+                
+                chartHtml += '</div>';
+                return chartHtml;
+            }
+            
+            // Dark mode toggle functionality
+            const darkModeToggle = document.getElementById('darkModeCheckbox');
+            
+            // Check if user preference is stored
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            
+            // Toggle dark mode when the switch is clicked
+            darkModeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'true');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'false');
+                }
+            });
+            
+            // Apply dynamic heights and widths for elements with data attributes
+            document.querySelectorAll('.chart-bar-fill[data-height]').forEach(el => {
+                const height = el.getAttribute('data-height');
+                if (height) {
+                    el.style.height = `${height}px`;
+                }
+            });
+            
+            document.querySelectorAll('.progress-bar-fill[data-width]').forEach(el => {
+                const width = el.getAttribute('data-width');
+                if (width) {
+                    el.style.width = `${width}%`;
+                }
+            });
+            
+            // Course Dashboard functionality
+            
+            // Handle tab switching
+            const courseTabs = document.querySelectorAll('.course-tab');
+            courseTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    courseTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Filter logic would go here in a real app
+                    const tabText = this.textContent.trim().toLowerCase();
+                    const courseCards = document.querySelectorAll('.course-card');
+                    
+                    courseCards.forEach(card => {
+                        if (tabText === 'all courses') {
+                            card.style.display = 'block';
+                        } else if (tabText === 'in progress' && card.querySelector('.status-ongoing')) {
+                            card.style.display = 'block';
+                        } else if (tabText === 'completed' && card.querySelector('.status-completed')) {
+                            card.style.display = 'block';
+                        } else if (tabText === 'not started' && card.querySelector('.status-not-started')) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            // Handle view toggle
+            const viewToggleBtns = document.querySelectorAll('.view-toggle-btn');
+            const coursesGrid = document.querySelector('.courses-grid');
+            
+            viewToggleBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    viewToggleBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const viewType = this.getAttribute('data-view');
+                    if (viewType === 'grid') {
+                        coursesGrid.classList.remove('list-view');
+                    } else {
+                        coursesGrid.classList.add('list-view');
+                    }
+                });
+            });
+        });
+        
+        // Admin dashboard functionality
+        if (document.getElementById('add-student-btn')) {
+            document.getElementById('add-student-btn').addEventListener('click', function() {
+                document.getElementById('student-modal').style.display = 'block';
+            });
+            
+            document.querySelector('.close-modal').addEventListener('click', function() {
+                document.getElementById('student-modal').style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('student-modal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+    </script>
+    
+    <!-- Student Modal -->
+    {% if is_admin %}
+    <div id="student-modal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+        <div class="modal-content" style="background-color: #fff; margin: 5% auto; padding: 20px; border-radius: 10px; width: 70%; max-width: 800px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <h2 style="margin: 0; color: #333;">Add New Student</h2>
+                <span class="close-modal" style="cursor: pointer; font-size: 24px;">&times;</span>
+            </div>
+            
+            <form id="student-form" method="post" action="{% url 'save_student' %}">
+                {% csrf_token %}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="student_id">Student ID</label>
+                        <input type="text" id="student_id" name="student_id" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="tel" id="phone" name="phone" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <input type="text" id="department" name="department" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="year">Year</label>
+                        <select id="year" name="year" class="form-control" required>
+                            <option value="">Select Year</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="semester">Semester</label>
+                        <select id="semester" name="semester" class="form-control" required>
+                            <option value="">Select Semester</option>
+                            <option value="1">1st Semester</option>
+                            <option value="2">2nd Semester</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="enrollment_date">Enrollment Date</label>
+                        <input type="date" id="enrollment_date" name="enrollment_date" class="form-control" required>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <button type="button" class="btn close-modal" style="background-color: #ccc; color: #333; margin-right: 10px;">Cancel</button>
+                    <button type="submit" class="btn" style="background-color: var(--primary); color: white;">Save Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Include navigation fix script -->
+    <script src="{% static 'js/navigation_fix.js' %}"></script>
+    
+    <script>
+        // Sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const body = document.body;
+            
+            // Check if user preference is stored
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                body.classList.add('sidebar-collapsed');
+            }
+            
+            // Automatically collapse sidebar on mobile devices
+            if (window.innerWidth <= 768) {
+                body.classList.add('sidebar-collapsed');
+            }
+            
+            // Toggle sidebar when button is clicked
+            sidebarToggle.addEventListener('click', function() {
+                body.classList.toggle('sidebar-collapsed');
+                localStorage.setItem('sidebarCollapsed', body.classList.contains('sidebar-collapsed'));
+            });
+            
+            // Auto-collapse sidebar on window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth <= 768) {
+                    body.classList.add('sidebar-collapsed');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

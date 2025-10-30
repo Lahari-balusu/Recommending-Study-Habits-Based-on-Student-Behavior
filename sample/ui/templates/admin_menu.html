@@ -1,0 +1,25 @@
+<!-- Admin menu items -->
+<div class="nav-section">
+    <h3 class="nav-section-title">ADMIN TOOLS</h3>
+    <div class="nav-items">
+        <a href="{% url 'add_student' %}" class="nav-item {% if request.path == '/add-student/' %}active{% endif %}">
+            <i class="fas fa-user-graduate"></i>
+            <span>Student Management</span>
+        </a>
+        <a href="{% url 'task_scheduler' %}" class="nav-item {% if request.path == '/admin/task-scheduler/' %}active{% endif %}">
+            <i class="fas fa-clock"></i>
+            <span>Task Scheduler</span>
+        </a>
+        <a href="#" class="nav-item" onclick="toggleNotifications(); return false;">
+            <i class="fas fa-bell"></i>
+            <span>Notifications</span>
+            {% if unread_notifications_count > 0 %}
+            <span class="badge badge-danger">{{ unread_notifications_count }}</span>
+            {% endif %}
+        </a>
+        <a href="{% url 'subjects' %}" class="nav-item {% if request.path == '/subjects/' %}active{% endif %}">
+            <i class="fas fa-book"></i>
+            <span>Course Management</span>
+        </a>
+    </div>
+</div>

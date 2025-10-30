@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Courses</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:#f3f4f6; padding:2rem }
+        .container { max-width:900px; margin:0 auto }
+        .card { background:#fff; padding:1rem 1.2rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:1rem }
+        .card h3 { margin-bottom:0.25rem }
+        .meta { color:#6b7280; font-size:0.9rem }
+        .grid { display:grid; grid-template-columns:1fr 120px 120px 100px; gap:1rem; align-items:center }
+        .label { font-weight:600 }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>My Study Tracks</h1>
+    <p class="meta">{% if greeting %}{{ greeting }}, {{ user.firstname }}{% else %}Hello{% endif %} — here are your courses/track entries.</p>
+
+    {% if my_courses and my_courses|length > 0 %}
+        {% for c in my_courses %}
+            <div class="card">
+                <div class="grid">
+                    <div>
+                        <h3>{{ c.course_name }}</h3>
+                        <div class="meta">{{ c.name }} · {{ c.student_id }}</div>
+                        <p class="meta">Status: {{ c.status }} · Completion: {{ c.completion }}%</p>
+                    </div>
+                    <div>
+                        <div class="label">Start</div>
+                        <div class="meta">{{ c.start_date }}</div>
+                    </div>
+                    <div>
+                        <div class="label">End</div>
+                        <div class="meta">{{ c.end_date }}</div>
+                    </div>
+                    <div>
+                        <div class="label">Hours</div>
+                        <div class="meta">{{ c.hours_spent }}</div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    {% comment %} Link button opens course detail where modules, videos and IQ tests are shown {% endcomment %}
+                    <a href="{% url 'course_detail' c.id %}" class="btn" style="border:1px solid #e5e7eb; padding:8px 12px; border-radius:8px; color:#3b82f6; text-decoration:none">{% if c.completion|default:0 >= 100 %}Review{% elif c.completion|default:0 == 0 %}Start{% else %}Continue{% endif %}</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="card">
+            <p>No courses found for your account yet. You can add courses via the admin or by using the "Add Course" form in the dashboard (if available).</p>
+        </div>
+    {% endif %}
+
+    <p><a href="{% url 'dashboard' %}">← Back to Dashboard</a></p>
+</div>
+</body>
+</html>

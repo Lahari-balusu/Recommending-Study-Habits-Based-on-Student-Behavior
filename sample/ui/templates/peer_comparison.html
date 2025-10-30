@@ -1,0 +1,512 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Peer Comparison | StudyTrack AI{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .comparison-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .comparison-card {
+        background: var(--dark);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+    }
+    
+    .comparison-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .comparison-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .comparison-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .comparison-metric {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .metric-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+    }
+    
+    .metric-name {
+        color: var(--gray);
+    }
+    
+    .metric-value {
+        font-weight: 600;
+    }
+    
+    .comparison-bar-container {
+        height: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+        display: flex;
+        overflow: hidden;
+    }
+    
+    .comparison-bar {
+        height: 100%;
+        width: 0; /* Will be set by JavaScript */
+        transition: width 0.5s ease;
+    }
+    
+    .user-bar {
+        background: var(--primary);
+    }
+    
+    .average-bar {
+        background: var(--gray);
+    }
+    
+    .top-bar {
+        background: var(--warning);
+    }
+    
+    .subject-comparison {
+        margin-top: 1rem;
+    }
+    
+    .subject-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .subject-row:last-child {
+        border-bottom: none;
+    }
+    
+    .subject-name {
+        flex: 1;
+        font-weight: 500;
+    }
+    
+    .subject-scores {
+        display: flex;
+        gap: 1.5rem;
+    }
+    
+    .score-item {
+        text-align: center;
+        min-width: 60px;
+    }
+    
+    .score-value {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .score-label {
+        font-size: 0.75rem;
+        color: var(--gray);
+    }
+    
+    .user-score {
+        color: var(--primary);
+    }
+    
+    .average-score {
+        color: var(--gray);
+    }
+    
+    .top-score {
+        color: var(--warning);
+    }
+    
+    .percentile-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .percentile-bar {
+        flex: 1;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 3px;
+        position: relative;
+    }
+    
+    .percentile-marker {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--primary);
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+    
+    .percentile-value {
+        font-weight: 600;
+        min-width: 40px;
+    }
+    
+    .legend {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+    }
+    
+    .radar-chart-container {
+        height: 400px;
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}Peer Comparison{% endblock %}
+{% block header_subtitle %}See how you compare with your peers{% endblock %}
+
+{% block content %}
+<div class="comparison-grid">
+    <div class="comparison-card">
+        <div class="comparison-header">
+            <h3 class="comparison-title">Study Hours</h3>
+        </div>
+        
+        <div class="comparison-content">
+            <div class="comparison-metric">
+                <div class="metric-label">
+                    <div class="metric-name">You</div>
+                    <div class="metric-value">{{ comparison_data.study_hours.user }} hrs</div>
+                </div>
+                <div class="comparison-bar-container">
+                    <div class="comparison-bar user-bar" data-width="{{ comparison_data.study_hours.user|floatformat:0 }}"></div>
+                </div>
+            </div>
+            
+            <div class="comparison-metric">
+                <div class="metric-label">
+                    <div class="metric-name">Class Average</div>
+                    <div class="metric-value">{{ comparison_data.study_hours.average }} hrs</div>
+                </div>
+                <div class="comparison-bar-container">
+                    <div class="comparison-bar average-bar" data-width="{{ comparison_data.study_hours.average|floatformat:0 }}"></div>
+                </div>
+            </div>
+            
+            <div class="comparison-metric">
+                <div class="metric-label">
+                    <div class="metric-name">Top Performers</div>
+                    <div class="metric-value">{{ comparison_data.study_hours.top_performers }} hrs</div>
+                </div>
+                <div class="comparison-bar-container">
+                    <div class="comparison-bar top-bar" data-width="{{ comparison_data.study_hours.top_performers|floatformat:0 }}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="comparison-card">
+        <div class="comparison-header">
+            <h3 class="comparison-title">Completion Rate</h3>
+        </div>
+        
+        <div class="comparison-content">
+            <div class="comparison-metric">
+                <div class="metric-label">
+                    <div class="metric-name">You</div>
+                    <div class="metric-value">{{ comparison_data.completion_rate.user }}%</div>
+                </div>
+                <div class="comparison-bar-container">
+                    <div class="comparison-bar user-bar" data-width="{{ comparison_data.completion_rate.user }}"></div>
+                </div>
+            </div>
+            
+            <div class="comparison-metric">
+                <div class="metric-label">
+                    <div class="metric-name">Class Average</div>
+                    <div class="metric-value">{{ comparison_data.completion_rate.average }}%</div>
+                </div>
+                <div class="comparison-bar-container">
+                    <div class="comparison-bar average-bar" data-width="{{ comparison_data.completion_rate.average }}"></div>
+                </div>
+            </div>
+            
+            <div class="comparison-metric">
+                <div class="metric-label">
+                    <div class="metric-name">Top Performers</div>
+                    <div class="metric-value">{{ comparison_data.completion_rate.top_performers }}%</div>
+                </div>
+                <div class="comparison-bar-container">
+                    <div class="comparison-bar top-bar" data-width="{{ comparison_data.completion_rate.top_performers }}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="comparison-card">
+        <div class="comparison-header">
+            <h3 class="comparison-title">Your Percentile</h3>
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="font-size: 3rem; font-weight: 700; color: var(--primary);">75<span style="font-size: 1.5rem; font-weight: 500;">th</span></div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Percentile among all students</div>
+        </div>
+        
+        <div class="percentile-indicator">
+            <div style="color: var(--gray);">0</div>
+            <div class="percentile-bar">
+                <div class="percentile-marker" style="left: 75%;"></div>
+            </div>
+            <div style="color: var(--gray);">100</div>
+        </div>
+        
+        <div style="margin-top: 2rem; color: var(--gray); text-align: center; font-size: 0.9rem;">
+            You're performing better than 75% of your peers!
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Subject Performance Comparison</h3>
+    </div>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: var(--primary);"></div>
+            <div>You</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: var(--gray);"></div>
+            <div>Class Average</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: var(--warning);"></div>
+            <div>Top Performers</div>
+        </div>
+    </div>
+    
+    <div class="subject-comparison">
+        {% for subject in comparison_data.subjects %}
+        <div class="subject-row">
+            <div class="subject-name">{{ subject.name }}</div>
+            <div class="subject-scores">
+                <div class="score-item">
+                    <div class="score-value user-score">{{ subject.user_score }}</div>
+                    <div class="score-label">You</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value average-score">{{ subject.average_score }}</div>
+                    <div class="score-label">Average</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value top-score">{{ subject.top_performers_score }}</div>
+                    <div class="score-label">Top</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Skill Comparison</h3>
+    </div>
+    
+    <div class="radar-chart-container">
+        <canvas id="skillRadarChart"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Study Habit Comparison</h3>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; padding: 1rem 0;">
+        <div style="text-align: center;">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">Time Management</div>
+            <div style="display: flex; justify-content: center; gap: 0.3rem;">
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: rgba(255, 255, 255, 0.1);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: rgba(255, 255, 255, 0.1);"></div>
+            </div>
+            <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">Above Average</div>
+        </div>
+        
+        <div style="text-align: center;">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">Consistency</div>
+            <div style="display: flex; justify-content: center; gap: 0.3rem;">
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: rgba(255, 255, 255, 0.1);"></div>
+            </div>
+            <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">Excellent</div>
+        </div>
+        
+        <div style="text-align: center;">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">Focus Quality</div>
+            <div style="display: flex; justify-content: center; gap: 0.3rem;">
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: rgba(255, 255, 255, 0.1);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: rgba(255, 255, 255, 0.1);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: rgba(255, 255, 255, 0.1);"></div>
+            </div>
+            <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">Needs Improvement</div>
+        </div>
+        
+        <div style="text-align: center;">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">Resource Utilization</div>
+            <div style="display: flex; justify-content: center; gap: 0.3rem;">
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--primary);"></div>
+            </div>
+            <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">Outstanding</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrascript %}
+<script>
+// JavaScript for the radar chart
+document.addEventListener('DOMContentLoaded', function() {
+    const skillRadarCtx = document.getElementById('skillRadarChart').getContext('2d');
+    new Chart(skillRadarCtx, {
+        type: 'radar',
+        data: {
+            labels: ['Problem Solving', 'Critical Thinking', 'Memory Retention', 'Note Taking', 'Time Management', 'Focus'],
+            datasets: [
+                {
+                    label: 'You',
+                    data: [85, 92, 78, 65, 70, 60],
+                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(99, 102, 241, 1)',
+                    pointRadius: 4
+                },
+                {
+                    label: 'Average',
+                    data: [70, 68, 65, 62, 60, 55],
+                    backgroundColor: 'rgba(148, 163, 184, 0.2)',
+                    borderColor: 'rgba(148, 163, 184, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(148, 163, 184, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(148, 163, 184, 1)',
+                    pointRadius: 4
+                },
+                {
+                    label: 'Top Performers',
+                    data: [95, 90, 85, 80, 90, 85],
+                    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                    borderColor: 'rgba(245, 158, 11, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(245, 158, 11, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(245, 158, 11, 1)',
+                    pointRadius: 4
+                }
+            ]
+        },
+        options: {
+            elements: {
+                line: {
+                    tension: 0.2
+                }
+            },
+            scales: {
+                r: {
+                    angleLines: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    pointLabels: {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        font: {
+                            size: 12
+                        }
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        backdropColor: 'transparent'
+                    },
+                    suggestedMin: 0,
+                    suggestedMax: 100
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        font: {
+                            size: 12
+                        },
+                        boxWidth: 15
+                    }
+                }
+            },
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+    
+    // Set width for comparison bars
+    document.querySelectorAll('.comparison-bar').forEach(bar => {
+        const width = bar.getAttribute('data-width');
+        if (width) {
+            setTimeout(() => {
+                bar.style.width = width + '%';
+            }, 100);
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyTrack Navigation Fix</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #14b8a6;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f3f4f6;
+            color: #1f2937;
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--darker);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto; /* Make sidebar scrollable */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+            transition: transform 0.3s ease;
+            z-index: 100;
+            scroll-behavior: smooth; /* Enable smooth scrolling */
+        }
+        
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .sidebar::-webkit-scrollbar {
+            display: none;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2.5rem;
+        }
+        
+        .logo-icon {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+        
+        .logo-text {
+            color: var(--light);
+            font-weight: 700;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo-text span {
+            color: var(--primary);
+        }
+        
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+        
+        .nav-title {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray);
+            margin-bottom: 1rem;
+            letter-spacing: 0.5px;
+            padding-left: 0.5rem;
+        }
+
+        /* Notification Styles */
+        .notification-badge {
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+
+        .notification-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            background-color: #f3f4f6;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: var(--darker);
+            margin-bottom: 0.25rem;
+        }
+
+        .notification-message {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Sidebar collapsed state */
+        .sidebar-collapsed .sidebar {
+            transform: translateX(-280px);
+        }
+
+        /* Sidebar toggle button */
+        .sidebar-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 200;
+            background: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: none;
+            display: none;
+        }
+
+        .sidebar-collapsed .sidebar-toggle {
+            left: 15px;
+            display: flex;
+        }
+        
+        /* Main content adjustment when sidebar is collapsed */
+        .sidebar-collapsed body {
+            margin-left: 0;
+        }
+        
+        /* Media Queries for responsive design */
+        @media (max-width: 768px) {
+            body {
+                /* Auto-collapse sidebar on mobile */
+                margin-left: 0;
+            }
+            body:not(.sidebar-active) {
+                margin-left: 0;
+            }
+            .sidebar {
+                transform: translateX(-280px);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .sidebar-toggle {
+                display: flex;
+            }
+        }
+        
+        /* Navigation Links - Ensuring they work properly */
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            color: var(--light);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-light);
+        }
+        
+        .nav-link.active {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary);
+        }
+        
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 22px;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="logo-text">Study<span>Track</span></div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-title">MAIN MENU</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-chart-line"></i></div>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/my-courses/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-user-graduate"></i></div>
+                        <span class="nav-text">My Courses</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/subjects/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-book"></i></div>
+                        <span class="nav-text">Subjects</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/schedule/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-calendar"></i></div>
+                        <span class="nav-text">Schedule</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/tasks/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-tasks"></i></div>
+                        <span class="nav-text">Tasks</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">ANALYTICS</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/insights/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-lightbulb"></i></div>
+                        <span class="nav-text">Insights</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/peer-comparison/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-users"></i></div>
+                        <span class="nav-text">Peer Comparison</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">ADMINISTRATION</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="http://127.0.0.1:8000/admin-dashboard/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-user-shield"></i></div>
+                        <span class="nav-text">Admin Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="http://127.0.0.1:8000/add-student/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-user-plus"></i></div>
+                        <span class="nav-text">Add Student</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">ACCOUNT</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/settings/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-cog"></i></div>
+                        <span class="nav-text">Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/logout/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-sign-out-alt"></i></div>
+                        <span class="nav-text">Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Make sure all navigation links work properly
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all navigation links
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            // Add click event to ensure they redirect properly
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Don't prevent default behavior - we want normal navigation
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#') {
+                        window.location.href = href;
+                    }
+                });
+            });
+
+            // Highlight active link based on current path
+            try {
+                const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+                navLinks.forEach(link => {
+                    const href = link.getAttribute('href') || '';
+                    const normHref = href.replace(/\/$/, '') || '/';
+                    if (normHref === currentPath || (normHref !== '/' && currentPath.startsWith(normHref))) {
+                        link.classList.add('active');
+                    }
+                });
+            } catch (e) {
+                // ignore
+            }
+
+            // Sidebar toggle functionality
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const body = document.body;
+            
+            // Check if user preference is stored
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                body.classList.add('sidebar-collapsed');
+            }
+            
+            // Automatically collapse sidebar on mobile devices
+            if (window.innerWidth <= 768) {
+                body.classList.add('sidebar-collapsed');
+            }
+            
+            // Toggle sidebar when button is clicked
+            sidebarToggle.addEventListener('click', function() {
+                body.classList.toggle('sidebar-collapsed');
+                localStorage.setItem('sidebarCollapsed', body.classList.contains('sidebar-collapsed'));
+            });
+            
+            // Auto-collapse sidebar on window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth <= 768) {
+                    body.classList.add('sidebar-collapsed');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

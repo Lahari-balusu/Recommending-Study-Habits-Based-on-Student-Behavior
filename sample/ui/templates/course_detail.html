@@ -1,0 +1,773 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ student.course_name }} — Course</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730A3;
+            --secondary: #14b8a6;
+            --dark: #1e1e2d;
+            --darker: #0f0f1a;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #4318FF 0%, #8F75FF 100%);
+            color: var(--light);
+            margin: 0;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .page-wrapper {
+            width: 95%;
+            min-height: 100vh;
+            padding: 1rem;
+            margin: 0 auto;
+        }
+        
+        .container { 
+            width: 95%;
+            margin: 0 auto;
+        }
+        
+        .course-header {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 0.25rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .back-link {
+            color: #4318FF;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-link:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .back-link:hover {
+            color: var(--primary);
+        }
+        
+        .course-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem;
+            color: #1B2559;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .course-subtitle {
+            color: #707EAE;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .progress-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .progress-stats {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-item {
+            background: #F6F8FD;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #1B2559;
+        }
+        
+        .stat-item i {
+            color: #4318FF;
+        }
+        
+        .progress-bar {
+            flex-grow: 1;
+            height: 8px;
+            background: #E9EDF7;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #05CD99;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .stat-info {
+            flex-grow: 1;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+        
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--light);
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card {
+            background: var(--dark);
+            padding: 0.75rem;
+            border-radius: 12px;
+            margin-bottom: 0.25rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 1.5rem;
+        }
+        
+        .course-content {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin-top: 0;
+        }
+
+        .modules-section {
+            background: #1e1e2d;
+            margin-bottom: 0;
+            margin-top: 0;
+            border-radius: 12px;
+            padding-top: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .module {
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .module:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .module-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+        }
+        
+        .module-info {
+            flex-grow: 1;
+        }
+        
+        .module-title {
+            font-weight: 600;
+            color: var(--light);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .module-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+        
+        .module-duration {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .module-progress {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: var(--light);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: #4318FF;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(67, 24, 255, 0.25);
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary-light);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary-light);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .module-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        
+        .module-actions .btn {
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        
+        .module-actions .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(67, 24, 255, 0.15);
+            background: #3311CC;
+        }
+        
+        .module-actions .btn-outline:hover {
+            border-color: #4318FF;
+            background: rgba(67, 24, 255, 0.1);
+        }
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .submit-assignment:hover {
+            background: #3311CC;
+            transform: translateY(-1px);
+        }
+
+        .quiz-section {
+            margin-top: 0.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .quiz-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .quiz-question {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .question-number {
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .question-content {
+            flex-grow: 1;
+        }
+        
+        .question-text {
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        
+        .question-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .choice-label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .choice-label:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .choice-text {
+            font-size: 0.9375rem;
+        }
+        
+        .quiz-result {
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .quiz-result-fail {
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        
+        .result-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--success);
+        }
+        
+        .quiz-result-fail .result-icon {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        .result-info {
+            flex-grow: 1;
+        }
+        
+        .result-title {
+            font-size: 0.875rem;
+            color: var(--gray);
+            margin-bottom: 0.25rem;
+        }
+        
+        .result-score {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--light);
+        }
+        
+        .result-percent {
+            color: var(--success);
+            font-weight: 500;
+        }
+        
+        .quiz-result-fail .result-percent {
+            color: var(--danger);
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--light);
+        }
+        
+        .question {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .question-text {
+            font-weight: 500;
+            color: var(--light);
+            margin-bottom: 1rem;
+        }
+        
+        .choice {
+            display: block;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .choice:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        
+        .choice input[type="radio"] {
+            margin-right: 0.5rem;
+        }
+        
+        .result {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .result-fail {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+    <!-- Back to Dashboard Link -->
+    <a href="{% url 'my_courses' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i>
+        Back to Dashboard
+    </a>
+
+    <div class="course-header">
+        <h1 class="course-title">
+            {{ student.course_name }}
+            <span class="overall-progress">Overall Progress</span>
+        </h1>
+        <p class="course-subtitle">Master data analysis and ML algorithms</p>
+        
+        <!-- Progress Information -->
+        <div class="progress-stats">
+            <div class="stat-item">
+                <i class="far fa-clock"></i>
+                {{ student.hours_spent }} hours completed
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-chart-line"></i>
+                {{ student.completion }}% Complete
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-flag"></i>
+                Status: {{ student.status|title }}
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ student.completion }}%"></div>
+        </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Completion</div>
+                    <div class="stat-value">{{ student.completion }}%</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Status</div>
+                    <div class="stat-value">{{ student.status|title }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="course-content" style="margin-top: 0;">
+        <!-- Course Modules Section -->
+        <div class="modules-section" style="margin-top: 0;">
+            <h2 class="section-title" style="margin-top: 0; margin-bottom: 0.5rem;">
+                <i class="fas fa-book"></i>
+                Course Modules
+            </h2>
+
+            {% for m in modules %}
+            <div class="module">
+                <div class="module-icon">
+                    <i class="fas fa-file-code"></i>
+                </div>
+                <div class="module-info">
+                    <div class="module-title">{{ m.title }}</div>
+                    <div class="module-meta">
+                        <div class="module-duration">
+                            <i class="far fa-clock"></i>
+                            {{ m.duration }}
+                        </div>
+                        <div class="module-progress">
+                            <i class="fas fa-chart-pie"></i>
+                            0.0/{{ m.duration }} hours
+                        </div>
+                    </div>
+                </div>
+                <div class="module-actions">
+                    {% if m.video_url %}
+                    <a href="{{ m.video_url }}" target="_blank" class="btn" style="background: #4318FF; color: white;">
+                        <i class="fas fa-play"></i>
+                        Watch
+                    </a>
+                    {% endif %}
+                    <button type="button" class="btn" onclick="showQuiz(this)" style="background: #4318FF; color: white;">
+                        <i class="fas fa-brain"></i>
+                        Take Quiz
+                    </button>
+                </div>
+
+                <!-- Inline Quiz Section -->
+                <div class="quiz-section" style="display: none;">
+                    <form method="post" class="quiz-form">
+                        {% csrf_token %}
+                        <div class="question">
+                            <div class="question-text">1. What is the purpose of Django's ORM?</div>
+                            <label class="choice">
+                                <input type="radio" name="q1" value="a">
+                                Database querying and manipulation
+                            </label>
+                            <label class="choice">
+                                <input type="radio" name="q1" value="b">
+                                Frontend styling
+                            </label>
+                            <label class="choice">
+                                <input type="radio" name="q1" value="c">
+                                Server configuration
+                            </label>
+                        </div>
+                        <div class="question">
+                            <div class="question-text">2. Which of these is a database migration command?</div>
+                            <label class="choice">
+                                <input type="radio" name="q2" value="a">
+                                python manage.py migrate
+                            </label>
+                            <label class="choice">
+                                <input type="radio" name="q2" value="b">
+                                python manage.py start
+                            </label>
+                            <label class="choice">
+                                <input type="radio" name="q2" value="c">
+                                python manage.py run
+                            </label>
+                        </div>
+                        <div class="question">
+                            <div class="question-text">3. What does MTV stand for in Django?</div>
+                            <label class="choice">
+                                <input type="radio" name="q3" value="a">
+                                Model Template View
+                            </label>
+                            <label class="choice">
+                                <input type="radio" name="q3" value="b">
+                                Modern Tech Version
+                            </label>
+                            <label class="choice">
+                                <input type="radio" name="q3" value="c">
+                                Main Type Variable
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i>
+                            Submit Quiz
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <script>
+    function showQuiz(button) {
+        // Hide all quizzes first
+        document.querySelectorAll('.quiz-section').forEach(quiz => {
+            quiz.style.display = 'none';
+        });
+        
+        // Show this module's quiz
+        const moduleDiv = button.closest('.module');
+        const quizSection = moduleDiv.querySelector('.quiz-section');
+        quizSection.style.display = 'block';
+        
+        // Scroll to quiz
+        quizSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    </script>
+    
+</div>
+</body>
+</html>

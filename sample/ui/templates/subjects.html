@@ -1,0 +1,324 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Subjects | StudyTrack AI{% endblock %}
+{% block pagetitle %}Subjects{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .subjects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .subject-card {
+        background: var(--dark);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .subject-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    
+    .subject-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .subject-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .subject-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    
+    .subject-progress {
+        margin-bottom: 1rem;
+    }
+    
+    .progress-bar-bg {
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        border-radius: 4px;
+        width: 0; /* Will be set by JavaScript */
+        transition: width 0.5s ease;
+    }
+    
+    .progress-bar.primary {
+        background: var(--primary);
+    }
+    
+    .progress-bar.secondary {
+        background: var(--secondary);
+    }
+    
+    .progress-bar.warning {
+        background: var(--warning);
+    }
+    
+    .progress-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .progress-percentage {
+        font-weight: 500;
+    }
+    
+    .subject-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .subject-stat {
+        flex: 1;
+        min-width: 80px;
+    }
+    
+    .stat-name {
+        color: var(--gray);
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-figure {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    .add-subject-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        min-height: 250px;
+        cursor: pointer;
+        border: 2px dashed rgba(255, 255, 255, 0.1);
+        transition: all 0.3s;
+    }
+    
+    .add-subject-card:hover {
+        border-color: var(--primary);
+        background: rgba(99, 102, 241, 0.05);
+    }
+    
+    .add-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .add-text {
+        font-weight: 500;
+        color: var(--gray);
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}Your Subjects{% endblock %}
+{% block header_subtitle %}Manage your subjects and learning materials{% endblock %}
+
+{% block content %}
+<!-- Debug Info -->
+<div style="background-color: rgba(0,0,0,0.1); padding: 10px; margin-bottom: 20px; border-radius: 5px;">
+    <h4>Debug Info:</h4>
+    <p>Template: subjects.html</p>
+    <p>User: {% if user %}{{ user.username }}{% else %}No user{% endif %}</p>
+    <p>Path: {{ request.path }}</p>
+    <p>Subjects count: {% if subjects %}{{ subjects|length }}{% else %}No subjects{% endif %}</p>
+    <ul>
+        {% for subject in subjects %}
+            <li>{{ subject.name }} - Progress: {{ subject.progress }}%</li>
+        {% empty %}
+            <li>No subjects found</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="subjects-grid">
+    {% for subject in subjects %}
+    <div class="subject-card">
+        <div class="subject-header">
+            <h3 class="subject-title">{{ subject.name }}</h3>
+            {% if subject.color == 'primary' %}
+            <div class="subject-icon" style="background: rgba(99, 102, 241, 0.2); color: var(--primary);">
+            {% elif subject.color == 'secondary' %}
+            <div class="subject-icon" style="background: rgba(20, 184, 166, 0.2); color: var(--secondary);">
+            {% else %}
+            <div class="subject-icon" style="background: rgba(245, 158, 11, 0.2); color: var(--warning);">
+            {% endif %}
+                <i class="{{ subject.icon }}"></i>
+            </div>
+        </div>
+        
+        <div class="subject-progress">
+            <div class="progress-bar-bg">
+                {% if subject.color == 'primary' %}
+                <div class="progress-bar primary" data-progress="{{ subject.progress }}"></div>
+                {% elif subject.color == 'secondary' %}
+                <div class="progress-bar secondary" data-progress="{{ subject.progress }}"></div>
+                {% else %}
+                <div class="progress-bar warning" data-progress="{{ subject.progress }}"></div>
+                {% endif %}
+            </div>
+            <div class="progress-stats">
+                <div class="progress-percentage">{{ subject.progress }}% Complete</div>
+                <div class="progress-topics">{{ subject.topics }}</div>
+            </div>
+        </div>
+        
+        <div class="subject-stats">
+            <div class="subject-stat">
+                <div class="stat-name">Hours Spent</div>
+                <div class="stat-figure">{{ subject.hours }}</div>
+            </div>
+            <div class="subject-stat">
+                <div class="stat-name">Last Studied</div>
+                <div class="stat-figure">{{ subject.last_studied }}</div>
+            </div>
+            <div class="subject-stat">
+                <div class="stat-name">Mastery</div>
+                <div class="stat-figure">{{ subject.mastery }}</div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            {% if subject.color == 'primary' %}
+            <button class="btn btn-primary" style="flex: 1;">Study Now</button>
+            {% elif subject.color == 'secondary' %}
+            <button class="btn btn-primary" style="flex: 1; background: var(--secondary);">Study Now</button>
+            {% else %}
+            <button class="btn btn-primary" style="flex: 1; background: var(--warning);">Study Now</button>
+            {% endif %}
+            <button class="btn btn-outline" style="width: 40px; padding: 0;">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+    
+    <!-- Add New Subject Card -->
+    <div class="subject-card add-subject-card">
+        <div class="add-icon">
+            <i class="fas fa-plus"></i>
+        </div>
+        <div class="add-text">Add New Subject</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Recommended Learning Paths</h2>
+        <button class="btn btn-outline">View All</button>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+        <div style="background: rgba(255, 255, 255, 0.03); border-radius: 10px; padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <div style="font-weight: 500;">Mathematics Mastery</div>
+                <div style="color: var(--primary); font-size: 0.8rem;">3 weeks</div>
+            </div>
+            <div style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.5rem;">
+                A comprehensive path to master calculus and algebra concepts
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+                <button class="btn btn-outline" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">Explore</button>
+                <div style="color: var(--gray); font-size: 0.8rem;">4.9 <i class="fas fa-star" style="color: var(--warning);"></i></div>
+            </div>
+        </div>
+        
+        <div style="background: rgba(255, 255, 255, 0.03); border-radius: 10px; padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <div style="font-weight: 500;">Physics Fundamentals</div>
+                <div style="color: var(--primary); font-size: 0.8rem;">4 weeks</div>
+            </div>
+            <div style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.5rem;">
+                Grasp essential physics concepts and problem-solving techniques
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+                <button class="btn btn-outline" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">Explore</button>
+                <div style="color: var(--gray); font-size: 0.8rem;">4.7 <i class="fas fa-star" style="color: var(--warning);"></i></div>
+            </div>
+        </div>
+        
+        <div style="background: rgba(255, 255, 255, 0.03); border-radius: 10px; padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <div style="font-weight: 500;">Computer Science Essentials</div>
+                <div style="color: var(--primary); font-size: 0.8rem;">5 weeks</div>
+            </div>
+            <div style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.5rem;">
+                From algorithms to data structures - everything you need to know
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+                <button class="btn btn-outline" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">Explore</button>
+                <div style="color: var(--gray); font-size: 0.8rem;">4.8 <i class="fas fa-star" style="color: var(--warning);"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set progress bar widths
+    document.querySelectorAll('.progress-bar').forEach(bar => {
+        const progress = bar.getAttribute('data-progress');
+        if (progress) {
+            setTimeout(() => {
+                bar.style.width = progress + '%';
+            }, 100);
+        }
+    });
+    
+    // Debug logging
+    console.log("Subjects page loaded");
+    console.log("Current path:", window.location.pathname);
+    
+    // Log all navigation links
+    const navLinks = document.querySelectorAll('.nav-link');
+    console.log("Navigation links found:", navLinks.length);
+    navLinks.forEach((link, index) => {
+        console.log(`Link ${index+1}: ${link.href} - Text: ${link.innerText.trim()}`);
+        
+        // Add additional click handler for debugging
+        link.addEventListener('click', function(e) {
+            console.log(`Clicked on: ${this.innerText.trim()} - Target: ${this.href}`);
+        });
+    });
+});
+</script>
+{% endblock %}

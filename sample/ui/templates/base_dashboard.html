@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}StudyTrack AI{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #14b8a6;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        /* Notification Styles */
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            margin-right: 20px;
+        }
+
+        .notification-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--darker);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 320px;
+            z-index: 1000;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .notification-dropdown.show {
+            display: block;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: var(--light);
+        }
+
+        .mark-all-read {
+            font-size: 0.85rem;
+            color: var(--primary-light);
+            cursor: pointer;
+        }
+
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .notification-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .notification-item.unread {
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .notification-message {
+            color: var(--light);
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .notification-time {
+            color: var(--gray);
+            font-size: 0.8rem;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f3f4f6;
+            color: #1f2937;
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--darker);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            transition: transform 0.3s ease;
+            overflow-y: auto; /* Make sidebar scrollable */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+            scroll-behavior: smooth; /* Enable smooth scrolling */
+        }
+        
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .sidebar::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2.5rem;
+        }
+        
+        .logo-icon {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+        
+        .logo-text {
+            color: var(--light);
+            font-weight: 700;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo-text span {
+            color: var(--primary);
+        }
+        
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+        
+        .nav-title {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray);
+            margin-bottom: 1rem;
+            letter-spacing: 0.5px;
+            padding-left: 0.5rem;
+        }
+
+        .notification-badge {
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: var(--gray);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        .nav-menu {
+            margin-bottom: 2rem;
+        }
+        
+        /* Admin section styles */
+        .admin-section-title {
+            color: var(--primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+        }
+        
+        .badge {
+            background: var(--danger);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        
+        .badge-danger {
+            background: var(--danger);
+        }
+
+        .notification-list {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Nav link styles */
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            color: var(--light);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer; /* Add pointer cursor to indicate clickable */
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-light);
+            text-decoration: none; /* Ensure no underline on hover */
+        }
+        
+        .nav-link.active {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary);
+        }
+        
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 22px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* Sidebar collapsed state */
+        .sidebar-collapsed .sidebar {
+            transform: translateX(-280px);
+        }
+
+        /* Sidebar toggle button */
+        .sidebar-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 200;
+            background: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: none;
+            display: none;
+        }
+
+        .sidebar-collapsed .sidebar-toggle {
+            left: 15px;
+            display: flex;
+        }
+        
+        /* Main content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-collapsed .main-content {
+            margin-left: 0;
+            max-width: 100%;
+            max-width: calc(100% - 280px);
+            transition: all 0.3s ease;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 16px 6px 6px;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .user-profile:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        
+        /* Media Queries for responsive design */
+        @media (max-width: 768px) {
+            body {
+                /* Auto-collapse sidebar on mobile */
+                margin-left: 0;
+            }
+            body:not(.sidebar-active) {
+                margin-left: 0;
+            }
+            .sidebar {
+                transform: translateX(-280px);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .sidebar-toggle {
+                display: flex;
+            }
+            .main-content {
+                margin-left: 0;
+                max-width: 100%;
+            }
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .card-action {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: var(--darker);
+                color: var(--light);
+            }
+            
+            .main-content {
+                background: var(--dark);
+            }
+            
+            .card {
+                background: var(--darker);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            
+            .card-title {
+                color: var(--light);
+            }
+            
+            .page-title {
+                color: var(--light);
+            }
+            
+            .user-profile {
+                background: var(--dark);
+            }
+            
+            .user-avatar {
+                background: var(--darker);
+                color: var(--light);
+            }
+            
+            /* External link styles */
+            .nav-item {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+
+            .external-link {
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 0.8rem;
+                color: var(--gray);
+                opacity: 0.5;
+                transition: all 0.3s;
+            }
+
+            .external-link:hover {
+                opacity: 1;
+                color: var(--primary-light);
+            }
+
+            .nav-link {
+                flex: 1;
+            }
+        }
+
+        /* Content styles */
+        .content-container {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            min-height: 300px; /* Ensure there's always a minimum height */
+            position: relative; /* For positioning children */
+            width: 100%; /* Take full width */
+        }
+        
+        /* Force display content */
+        .subjects-grid, .schedule-timeline, .tasks-grid, .progress-container, 
+        .insights-container, .peer-comparison-container {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        /* Card styles */
+        .card {
+            background: var(--dark);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--light);
+        }
+        
+        /* Button styles */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--gray);
+            color: var(--gray);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+    </style>
+    {% block extrastyle %}{% endblock %}
+    {% block extrahead %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="logo-text">Study<span>Track</span></div>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">Main Menu</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard/" class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}">
+                        <div class="nav-icon"><i class="fas fa-chart-line"></i></div>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/subjects/" class="nav-link {% if request.path == '/subjects/' %}active{% endif %}">
+                        <div class="nav-icon"><i class="fas fa-book"></i></div>
+                        <span class="nav-text">Subjects</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/schedule/" class="nav-link {% if request.path == '/schedule/' %}active{% endif %}">
+                        <div class="nav-icon"><i class="fas fa-calendar"></i></div>
+                        <span class="nav-text">Schedule</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'tasks' %}" class="nav-link {% if request.path == '/tasks/' %}active{% endif %}">
+                        <div class="nav-icon"><i class="fas fa-tasks"></i></div>
+                        <span class="nav-text">Tasks</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">Analytics</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/insights/" class="nav-link {% if request.path == '/insights/' %}active{% endif %}">
+                        <div class="nav-icon"><i class="fas fa-lightbulb"></i></div>
+                        <span class="nav-text">Insights</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/peer-comparison/" class="nav-link {% if request.path == '/peer-comparison/' %}active{% endif %}">
+                        <div class="nav-icon"><i class="fas fa-users"></i></div>
+                        <span class="nav-text">Peer Comparison</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {% if user.is_superuser %}
+        <div class="nav-section">
+            <div class="nav-title">Admin</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/admin_dashboard/" class="nav-link {% if request.path == '/admin_dashboard/' %}active{% endif %}">
+                        <div class="nav-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        <span class="nav-text">Admin Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/student-activity/" class="nav-link {% if request.path == '/student-activity/' %}active{% endif %}">
+                        <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+                        <span class="nav-text">Student Activity</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin:index' %}" class="nav-link" target="_blank">
+                        <div class="nav-icon"><i class="fas fa-cogs"></i></div>
+                        <span class="nav-text">Django Admin</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+        
+        <div class="nav-section mt-auto">
+            <div class="nav-title">Account</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/settings/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-cog"></i></div>
+                        <span class="nav-text">Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/logout/" class="nav-link">
+                        <div class="nav-icon"><i class="fas fa-sign-out-alt"></i></div>
+                        <span class="nav-text">Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="main-content">
+        <div class="header">
+            <div>
+                <h1 class="page-title">{% block pagetitle %}Dashboard{% endblock %}</h1>
+                <p class="welcome-text">{% block header_subtitle %}Welcome to your dashboard{% endblock %}</p>
+            </div>
+            
+            <div class="header-actions">
+                <div class="notification-bell" onclick="toggleNotifications()">
+                    <i class="fas fa-bell"></i>
+                    {% if unread_notifications_count > 0 %}
+                        <span class="notification-count">{{ unread_notifications_count }}</span>
+                    {% endif %}
+                    <div id="notificationDropdown" class="notification-dropdown">
+                        <div class="notification-header">
+                            <span class="notification-title">Notifications</span>
+                            <span class="mark-all-read" onclick="markAllRead()">Mark all as read</span>
+                        </div>
+                        <div class="notification-list">
+                                python manage.py migrate
+                                python manage.py runserver                                from ui.models import UserNotification                                <div class="notification-item unread">
+                                    <div class="notification-message"><strong>Reminder:</strong> Complete your <b>Python Full Stack</b> course and pending quizzes!</div>
+                                    <div class="notification-time">Today</div>
+                                </div>
+                                <div class="notification-item unread">
+                                    <div class="notification-message"><strong>Action Required:</strong> Finish all modules in <b>Data Structures</b> course.</div>
+                                    <div class="notification-time">2 days ago</div>
+                                </div>
+                                <div class="notification-item">
+                                    <div class="notification-message"><strong>Upcoming:</strong> <b>AI Fundamentals</b> course deadline is next week.</div>
+                                    <div class="notification-time">3 days left</div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        {% if user.firstname %}
+                            {{ user.firstname|first }}{{ user.lastname|first }}
+                        {% else %}
+                            <i class="fas fa-user"></i>
+                        {% endif %}
+                    </div>
+                    <div class="user-name">{{ user.username }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-container">
+            <!-- Debug info -->
+            <div class="debug-info" style="background: rgba(0,0,0,0.1); padding: 10px; margin-bottom: 10px; border-radius: 5px;">
+                <h4>Debug Info:</h4>
+                <p>Template: base_dashboard.html</p>
+                <p>User: {% if user %}{{ user.username }}{% else %}No user{% endif %}</p>
+                <p>Path: {{ request.path }}</p>
+                <p>Available context keys:</p>
+                <ul>
+                    {% for key, value in view.kwargs.items %}
+                    <li>{{ key }}: {{ value }}</li>
+                    {% endfor %}
+                    
+                    {% if subjects %}
+                    <li>subjects: Available</li>
+                    {% endif %}
+                    
+                    {% if schedule_data %}
+                    <li>schedule_data: Available</li>
+                    {% endif %}
+                    
+                    {% if tasks_data %}
+                    <li>tasks_data: Available</li>
+                    {% endif %}
+                    
+                    {% if study_data %}
+                    <li>study_data: Available</li>
+                    {% endif %}
+                    
+                    {% if insights_data %}
+                    <li>insights_data: Available</li>
+                    {% endif %}
+                    
+                    {% if comparison_data %}
+                    <li>comparison_data: Available</li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    {% block extrascripts %}{% endblock %}
+    
+    <script>
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function markAsRead(notificationId) {
+            fetch(`/api/notifications/${notificationId}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            }).then(() => {
+                window.location.reload();
+            });
+        }
+
+        function markAllRead() {
+            fetch('/api/notifications/mark-all-read/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            }).then(() => {
+                window.location.reload();
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('notificationDropdown');
+            const bell = document.querySelector('.notification-bell');
+            if (!bell.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Add event listeners to ensure navigation links work
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all navigation links
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            // Add click event listener to each link
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Get the href attribute
+                    const href = this.getAttribute('href');
+                    
+                    // If href is a valid URL and not a target="_blank" link, navigate to it
+                    if (href && href !== '#' && !this.hasAttribute('target')) {
+                        window.location.href = href;
+                    }
+                });
+            });
+
+            // Sidebar toggle functionality
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const body = document.body;
+            
+            // Check if user preference is stored
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                body.classList.add('sidebar-collapsed');
+            }
+            
+            // Automatically collapse sidebar on mobile devices
+            if (window.innerWidth <= 768) {
+                body.classList.add('sidebar-collapsed');
+            }
+            
+            // Toggle sidebar when button is clicked
+            sidebarToggle.addEventListener('click', function() {
+                body.classList.toggle('sidebar-collapsed');
+                localStorage.setItem('sidebarCollapsed', body.classList.contains('sidebar-collapsed'));
+            });
+            
+            // Auto-collapse sidebar on window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth <= 768) {
+                    body.classList.add('sidebar-collapsed');
+                }
+            });
+        });
+    </script>
+</body>
+    <!-- AI Chatbot Widget -->
+    <div id="ai-chatbot-widget" style="position: fixed; bottom: 32px; right: 32px; z-index: 9999;">
+        <button id="openChatbot" style="background: #6366f1; color: #fff; border: none; border-radius: 50%; width: 60px; height: 60px; box-shadow: 0 4px 16px rgba(99,102,241,0.2); font-size: 2rem; cursor: pointer;">
+            <i class="fas fa-robot"></i>
+        </button>
+        <div id="chatbotModal" style="display: none; position: absolute; bottom: 70px; right: 0; width: 350px; background: #fff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); overflow: hidden;">
+            <div style="background: #6366f1; color: #fff; padding: 1rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                <span>AI Study Assistant</span>
+                <button id="closeChatbot" style="background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">&times;</button>
+            </div>
+            <div id="chatbotMessages" style="height: 300px; overflow-y: auto; padding: 1rem; background: #f8fafc;"></div>
+            <form id="chatbotForm" style="display: flex; border-top: 1px solid #eee;">
+                <input id="chatbotInput" type="text" placeholder="Ask me anything..." style="flex: 1; border: none; padding: 0.75rem; font-size: 1rem; outline: none;">
+                <button type="submit" style="background: #6366f1; color: #fff; border: none; padding: 0 1.2rem; font-size: 1.1rem; cursor: pointer;">Send</button>
+            </form>
+        </div>
+    </div>
+    <script>
+    // Chatbot widget logic
+    const openChatbot = document.getElementById('openChatbot');
+    const chatbotModal = document.getElementById('chatbotModal');
+    const closeChatbot = document.getElementById('closeChatbot');
+    const chatbotForm = document.getElementById('chatbotForm');
+    const chatbotInput = document.getElementById('chatbotInput');
+    const chatbotMessages = document.getElementById('chatbotMessages');
+
+    openChatbot.addEventListener('click', () => chatbotModal.style.display = 'block');
+    closeChatbot.addEventListener('click', () => chatbotModal.style.display = 'none');
+
+    chatbotForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const userMsg = chatbotInput.value.trim();
+        if (!userMsg) return;
+        appendMessage('You', userMsg, true);
+        chatbotInput.value = '';
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        // Call backend API for AI response (replace URL with your endpoint)
+        appendMessage('AI', 'Thinking...', false, true);
+        try {
+            const res = await fetch('/ai-chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ message: userMsg })
+            });
+            const data = await res.json();
+            chatbotMessages.removeChild(chatbotMessages.lastChild); // Remove 'Thinking...'
+            appendMessage('AI', data.reply, false);
+        } catch (err) {
+            chatbotMessages.removeChild(chatbotMessages.lastChild);
+            appendMessage('AI', 'Sorry, I could not process your request.', false);
+        }
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    });
+
+    function appendMessage(sender, text, isUser, isThinking) {
+        const msgDiv = document.createElement('div');
+        msgDiv.style.marginBottom = '0.5rem';
+        msgDiv.style.textAlign = isUser ? 'right' : 'left';
+        msgDiv.innerHTML = `<span style="display:inline-block; background:${isUser ? '#6366f1' : '#e5e7eb'}; color:${isUser ? '#fff' : '#222'}; padding:0.5rem 1rem; border-radius:12px; max-width:80%;">${isThinking ? '<i>Thinking...</i>' : text}</span>`;
+        chatbotMessages.appendChild(msgDiv);
+    }
+    </script>
+</html>

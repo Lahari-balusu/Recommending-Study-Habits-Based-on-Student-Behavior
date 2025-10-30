@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body { 
+            background: linear-gradient(135deg, #4568DC 0%, #B06AB3 50%, #4568DC 100%);
+            color: #eaeaea; 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+            animation: gradientAnimation 15s ease infinite;
+        }
+        
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Background decoration elements */
+        .bg-decoration {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(249,211,66,0.1) 0%, rgba(249,211,66,0) 70%);
+            z-index: -1;
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        .bg-decoration:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: 15%;
+            left: 5%;
+            animation-delay: 0s;
+        }
+        
+        .bg-decoration:nth-child(2) {
+            width: 500px;
+            height: 500px;
+            bottom: -250px;
+            right: -150px;
+            animation-delay: 5s;
+        }
+        
+        .bg-decoration:nth-child(3) {
+            width: 200px;
+            height: 200px;
+            top: -100px;
+            right: 20%;
+            animation-delay: 2.5s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
+            50% { transform: translateY(-20px) scale(1.05); opacity: 0.7; }
+        }
+        
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(30px);
+            z-index: -1;
+            animation: pulse 8s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.2); opacity: 0.8; }
+        }
+        
+        .floating-shape {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            transform: rotate(45deg);
+            z-index: -1;
+            animation: float 12s infinite alternate;
+        }
+        .login-container {
+            background: rgba(22, 24, 32, 0.8);
+            padding: 48px 32px 36px 32px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3), 0 5px 15px rgba(0,0,0,0.2);
+            width: 420px;
+            max-width: 98vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shine 5s infinite;
+            z-index: 0;
+        }
+        
+        @keyframes shine {
+            0% { left: -100%; }
+            20% { left: 100%; }
+            100% { left: 100%; }
+        }
+        h2 {
+            text-align: center;
+            color: #f9d342;
+            margin-bottom: 10px;
+            font-size: 2.1rem;
+            letter-spacing: 1px;
+        }
+        .login-subtitle {
+            color: #e0e0e0;
+            font-size: 1.05rem;
+            margin-bottom: 22px;
+            text-align: center;
+        }
+        .input-label {
+            color: #f9d342;
+            font-weight: 600;
+            margin-bottom: 6px;
+            margin-top: 10px;
+            font-size: 1.05rem;
+            text-align: left;
+        }
+        .input-icon-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .input-icon-wrapper input {
+            width: 100%;
+            max-width: 500px;
+            min-width: 320px;
+            padding: 14px 48px 14px 22px;
+            border: 1.5px solid #35394a;
+            border-radius: 14px;
+            font-size: 1.08rem;
+            outline: none;
+            background: #181c24;
+            color: #eaeaea;
+            transition: border 0.2s;
+        }
+        .input-icon-wrapper .input-icon {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+        .input-icon-wrapper input:focus {
+            border: 2px solid #f9d342;
+        }
+        .input-icon-wrapper .input-icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #4568DC 0%, #B06AB3 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 18px;
+            margin-top: 8px;
+            box-shadow: 0 4px 15px rgba(69, 104, 220, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(69, 104, 220, 0.6);
+            background: linear-gradient(90deg, #B06AB3 0%, #4568DC 100%);
+        }
+        .login-btn:active {
+            transform: translateY(1px);
+        }
+        .register-link {
+            width: 100%;
+            text-align: center;
+            color: #e0e0e0;
+            font-size: 1.05rem;
+            margin-top: 2px;
+        }
+        .register-link a {
+            color: #f9d342;
+            font-weight: 700;
+            text-decoration: none;
+            margin-left: 4px;
+            transition: color 0.2s;
+        }
+        .register-link a:hover {
+            color: #ffe066;
+        }
+        @media (max-width: 500px) {
+            .login-container {
+                width: 95vw;
+                padding: 24px 8px 16px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background decoration elements -->
+    <!-- Enhanced background decorations -->
+    <div class="bg-decoration"></div>
+    <div class="bg-decoration"></div>
+    <div class="bg-decoration"></div>
+    <div class="bg-circle" style="top: 15%; right: 10%; width: 150px; height: 150px; background: rgba(69, 104, 220, 0.3);"></div>
+    <div class="bg-circle" style="bottom: 10%; left: 5%; width: 200px; height: 200px; background: rgba(176, 106, 179, 0.2);"></div>
+    <div class="floating-shape" style="top: 25%; left: 10%"></div>
+    <div class="floating-shape" style="bottom: 15%; right: 15%"></div>
+    
+    <div class="login-container">
+        <div style="display:flex;justify-content:center;align-items:center;margin-bottom:18px;">
+                <img src="data:image/png;base64,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" alt="User Logo" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; background: #fff; border: 3px solid gold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        </div>
+        <h2>Login</h2>
+        <div class="login-subtitle">Welcome back! Please login to your account</div>
+    <form method="post" action="{% url 'login' %}" style="width:100%;display:flex;flex-direction:column;align-items:center;max-width:400px;margin:0 auto;">
+            {% csrf_token %}
+            {% if messages %}
+                <div style="width:100%; text-align:center; margin-bottom:15px;">
+                    {% for message in messages %}
+                        {% if message.tags == 'error' %}
+                            <p style="color: #ff4d4d; font-weight: bold;">
+                                {{ message }}
+                            </p>
+                        {% else %}
+                            <p style="color: #4caf50; font-weight: bold;">
+                                {{ message }}
+                            </p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="input-label" style="text-align:left;width:92%;margin-bottom:4px;">Username or Email</div>
+            <div class="input-icon-wrapper" style="width:92%;margin-bottom:18px;">
+                <input type="text" id="username" name="username" placeholder="Username or Email" required style="width:100%;">
+                <span class="input-icon">
+                    <!-- Email SVG Icon -->
+                    <svg width="26" height="26" fill="none" stroke="#f9d342" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
+                </span>
+            </div>
+            <div class="input-label" style="text-align:left;width:92%;margin-bottom:4px;">Password</div>
+            <div class="input-icon-wrapper" style="width:92%;margin-bottom:18px;">
+                <input type="password" id="password" name="password" placeholder="Password" required style="width:100%;">
+                <span class="input-icon" onclick="togglePassword('password', this)" style="cursor:pointer;">
+                    <!-- Eye SVG Icon -->
+                    <svg width="26" height="26" fill="none" stroke="#f9d342" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                </span>
+            </div>
+            <div class="forgot-link" style="width:92%;text-align:left;margin-bottom:18px;">
+                <a href="#" style="color:#f9d342;text-decoration:none;font-size:1rem;">Forgot Password?</a>
+            </div>
+            <button class="login-btn" type="submit" style="width:92%;margin-bottom:18px;">Login</button>
+    <style>
+        .social-auth-row {
+            display: flex;
+            justify-content: center;
+            margin-top: 28px;
+        }
+        .social-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #232733;
+            border: 2px solid #35394a;
+            color: #eaeaea;
+            border-radius: 12px;
+            padding: 10px 32px;
+            font-size: 1.08rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border 0.2s, background 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .social-btn .icon {
+            display: flex;
+            align-items: center;
+        }
+        .social-btn.google-btn:hover {
+            border-color: #4285F4;
+            background: #232733ee;
+        }
+    </style>
+        <div class="or-separator" style="width:92%;margin:32px auto 0 auto;display:flex;align-items:center;">
+            <hr style="flex:1;border:none;height:1.5px;background:#35394a;"> 
+            <span style="margin:0 16px;color:#f9d342;font-weight:600;font-size:1.1rem;">OR</span>
+            <hr style="flex:1;border:none;height:1.5px;background:#35394a;">
+        </div>
+        <div class="social-logos-row" style="width:92%;margin:18px auto 0 auto;display:flex;justify-content:center;gap:24px;">
+            <button class="social-logo-btn" style="background:#232733;border:2px solid #35394a;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border 0.2s;">
+                <!-- Google SVG -->
+                <svg width="28" height="28" viewBox="0 0 48 48"><g><path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.7 33.1 29.8 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.4l6.4-6.4C33.5 5.1 28.1 3 22 3 11.5 3 3 11.5 3 22s8.5 19 19 19c9.5 0 18-7.5 18-19 0-1.3-.1-2.7-.5-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 17.1 19.2 14 24 14c2.7 0 5.2.9 7.2 2.4l6.4-6.4C33.5 5.1 28.1 3 22 3 14.1 3 7.1 7.6 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.8 0 10.7-2.1 14.3-5.7l-6.6-5.4C29.2 35.1 26.7 36 24 36c-5.7 0-10.5-3.7-12.2-8.8l-7 5.4C7.1 40.4 14.1 44 24 44z"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.7c-1.1 3.1-4.2 7.5-11.7 7.5-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 6 .9 8.2 2.6l6.2-6.2C36.7 5.1 30.7 3 24 3 11.5 3 3 11.5 3 24s8.5 19 19 19c9.5 0 18-7.5 18-19 0-1.3-.1-2.7-.5-4z"/></g></svg>
+            </button>
+            <button class="social-logo-btn" style="background:#232733;border:2px solid #35394a;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border 0.2s;">
+                <!-- Facebook SVG -->
+                <svg width="28" height="28" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#1877F3"/><path d="M21.5 16h-3v8h-3v-8h-2v-3h2v-2c0-2.2 1.3-3.5 3.5-3.5h2.5v3h-2c-.5 0-1 .5-1 1v1.5h3l-.5 3z" fill="#fff"/></svg>
+            </button>
+            <button class="social-logo-btn" style="background:#232733;border:2px solid #35394a;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border 0.2s;">
+                <!-- Apple SVG -->
+                <svg width="28" height="28" viewBox="0 0 24 24"><path fill="#fff" d="M16.365 1.43c0 1.14-.93 2.07-2.07 2.07-.06 0-.12 0-.18-.01.01-.13.02-.26.02-.39 0-1.14.93-2.07 2.07-2.07.06 0 .12 0 .18.01-.01.13-.02.26-.02.39zm2.52 4.13c-1.36-.08-2.51.78-3.16.78-.65 0-1.65-.76-2.72-.74-1.4.02-2.7.81-3.42 2.06-1.46 2.53-.37 6.28 1.04 8.34.69 1.01 1.51 2.14 2.59 2.1 1.04-.04 1.43-.68 2.68-.68 1.25 0 1.6.68 2.7.66 1.12-.02 1.82-1.03 2.5-2.05.79-1.16 1.12-2.29 1.13-2.35-.02-.01-2.18-.84-2.2-3.33-.02-2.08 1.7-3.07 1.78-3.12-1-.15-2.04.61-2.59.61-.54 0-1.37-.6-2.26-.59zm-2.5-4.13c0 1.14-.93 2.07-2.07 2.07-.06 0-.12 0-.18-.01.01-.13.02-.26.02-.39 0-1.14.93-2.07 2.07-2.07.06 0 .12 0 .18.01-.01.13-.02.26-.02.39z"/></svg>
+            </button>
+        </div>
+</form>
+    <script>
+    function togglePassword(fieldId, iconSpan) {
+        var input = document.getElementById(fieldId);
+        if (input.type === "password") {
+            input.type = "text";
+            iconSpan.innerHTML = '<svg width="26" height="26" fill="none" stroke="#f9d342" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.77 21.77 0 0 1 5.06-6.06M9.53 9.53A3.5 3.5 0 0 1 12 8.5c1.93 0 3.5 1.57 3.5 3.5 0 .47-.09.92-.26 1.33"/><path d="M1 1l22 22"/></svg>';
+        } else {
+            input.type = "password";
+            iconSpan.innerHTML = '<svg width="26" height="26" fill="none" stroke="#f9d342" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+        }
+    }
+    </script>
+        <div class="register-link" style="margin-top: 25px;">
+            Don't have an account? <a href="/register">Register</a>
+        </div>
+
+   
+    
+        
+</body>
+</html>

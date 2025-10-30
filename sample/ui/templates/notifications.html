@@ -1,0 +1,121 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+    .notification-indicator {
+        width: 8px;
+        height: 8px;
+        background-color: #ef4444;
+        border-radius: 50%;
+        position: absolute;
+        top: -2px;
+        right: -2px;
+    }
+</style>
+{% endblock %}
+
+{% block navigation_items %}
+<!-- Existing navigation items -->
+
+<!-- Notifications -->
+<div class="nav-item">
+    <div class="notification-bell" onclick="toggleNotifications()">
+        <i class="fas fa-bell"></i>
+        {% if unread_notifications_count > 0 %}
+        <span class="notification-count">{{ unread_notifications_count }}</span>
+        {% endif %}
+        
+        <div class="notification-dropdown" id="notificationDropdown">
+            <div class="notification-header">
+                <h3>Notifications</h3>
+                {% if notifications %}
+                <button onclick="markAllRead()" class="text-sm text-primary hover:text-primary-dark">
+                    Mark all as read
+                </button>
+                {% endif %}
+            </div>
+            
+            <div class="notification-list">
+                {% if notifications %}
+                    {% for notification in notifications %}
+                    <div class="notification-item {% if not notification.is_read %}unread{% endif %} notification-priority-{{ notification.priority }}"
+                         onclick="markAsRead({{ notification.id }})">
+                        <div class="notification-title">
+                            {{ notification.title }}
+                        </div>
+                        <div class="notification-message">
+                            {{ notification.message }}
+                        </div>
+                        <div class="notification-time">
+                            {{ notification.created_at|timesince }} ago
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-gray py-4">
+                        No new notifications
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleNotifications() {
+    const dropdown = document.getElementById('notificationDropdown');
+    dropdown.classList.toggle('show');
+}
+
+function markAsRead(notificationId) {
+    fetch(`/api/notifications/${notificationId}/mark-read/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    }).then(() => {
+        window.location.reload();
+    });
+}
+
+function markAllRead() {
+    fetch('/api/notifications/mark-all-read/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    }).then(() => {
+        window.location.reload();
+    });
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('notificationDropdown');
+    const bell = document.querySelector('.notification-bell');
+    if (!bell.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% load static %}
+
+<div class="admin-section">
+    <h2>Admin Dashboard</h2>
+    <div class="admin-grid">
+        <!-- Student Management -->
+        <div class="admin-card">
+            <h3><i class="fas fa-user-graduate"></i> Student Management</h3>
+            <p>Add, edit, or remove student records</p>
+            <a href="{% url 'add_student' %}" class="btn btn-primary">Manage Students</a>
+        </div>
+
+        <!-- Task Scheduler -->
+        <div class="admin-card">
+            <h3><i class="fas fa-clock"></i> Task Scheduler</h3>
+            <p>Configure notification and reminder schedules</p>
+            <a href="{% url 'task_scheduler' %}" class="btn btn-primary">Manage Tasks</a>
+        </div>
+
+        <!-- Notifications -->
+        <div class="admin-card">
+            <h3><i class="fas fa-bell"></i> Notifications</h3>
+            <p>Manage system notifications and alerts</p>
+            <button onclick="showNotifications()" class="btn btn-primary">View Notifications</button>
+        </div>
+
+        <!-- Course Management -->
+        <div class="admin-card">
+            <h3><i class="fas fa-book"></i> Course Management</h3>
+            <p>Add and modify course content</p>
+            <a href="{% url 'subjects' %}" class="btn btn-primary">Manage Courses</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function showNotifications() {
+    const dropdown = document.getElementById('notificationDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('show');
+    }
+}
+</script>

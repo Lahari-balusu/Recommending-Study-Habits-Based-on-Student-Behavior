@@ -1,0 +1,789 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Tasks | StudyTrack AI{% endblock %}
+
+{% load static %}
+
+{% block extrastyle %}
+<style>
+    .tasks-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .task-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .task-card {
+        background: var(--dark);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 1rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        transition: transform 0.2s;
+    }
+    
+    .task-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .task-checkbox {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        border: 2px solid var(--gray);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    
+    .task-checkbox.high {
+        border-color: var(--primary);
+    }
+    
+    .task-checkbox.medium {
+        border-color: var(--secondary);
+    }
+    
+    .task-checkbox.low {
+        border-color: var(--warning);
+    }
+    
+    .task-checkbox.completed {
+        background: var(--success);
+        border-color: var(--success);
+        color: white;
+    }
+    
+    .task-content {
+        flex: 1;
+    }
+    
+    .task-title {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .task-info {
+        display: flex;
+        color: var(--gray);
+        font-size: 0.85rem;
+        gap: 1rem;
+    }
+    
+    .task-subject {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .task-due-date {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .priority-badge {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+    }
+    
+    .priority-badge.high {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+    }
+    
+    .priority-badge.medium {
+        background: rgba(20, 184, 166, 0.2);
+        color: var(--secondary);
+    }
+    
+    .priority-badge.low {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning);
+    }
+    
+    .task-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .task-action-btn {
+        background: none;
+        border: none;
+        color: var(--gray);
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+    
+    .task-action-btn:hover {
+        color: var(--light);
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Task filters */
+    .task-filters {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .filter-select {
+        background: var(--dark);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--light);
+        padding: 0.5rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+    
+    .search-input {
+        background: var(--dark);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--light);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        width: 200px;
+    }
+    
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.show {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: var(--darker);
+        border-radius: 12px;
+        padding: 2rem;
+        width: 90%;
+        max-width: 500px;
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .modal-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--light);
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        color: var(--gray);
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--gray);
+    }
+    
+    .form-input {
+        width: 100%;
+        background: var(--dark);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--light);
+        padding: 0.75rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+    
+    .form-select {
+        width: 100%;
+        background: var(--dark);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--light);
+        padding: 0.75rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary:hover {
+        background: var(--primary-dark);
+    }
+    
+    .priority-high {
+        background: rgba(99, 102, 241, 0.15);
+        color: var(--primary-light);
+    }
+    
+    .priority-medium {
+        background: rgba(20, 184, 166, 0.15);
+        color: var(--secondary);
+    }
+    
+    .priority-low {
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--warning);
+    }
+    
+    .progress-container {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        border-radius: 3px;
+        width: 0; /* Will be set by JavaScript */
+        transition: width 0.5s ease;
+    }
+    
+    .task-progress {
+        background: var(--primary);
+    }
+    
+    .task-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .action-button {
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        color: var(--gray);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    
+    .action-button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--light);
+    }
+    
+    .task-completed .task-title {
+        text-decoration: line-through;
+        color: var(--gray);
+    }
+    
+    .add-task {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .add-task-input {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        color: var(--light);
+    }
+    
+    .task-filters {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .filter-pill {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--gray);
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    
+    .filter-pill.active {
+        background: var(--primary);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}Your Tasks{% endblock %}
+{% block header_subtitle %}Manage your assignments and study tasks{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Task Management</h2>
+        <button class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Task
+        </button>
+    </div>
+    
+    <div class="task-filters">
+        <div class="filter-pill active">All</div>
+        <div class="filter-pill">Today</div>
+        <div class="filter-pill">This Week</div>
+        <div class="filter-pill">High Priority</div>
+        <div class="filter-pill">Completed</div>
+    </div>
+    
+    <div class="tasks-container">
+        <div>
+            <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--gray);">Tasks</h3>
+            <div class="task-list">
+                {% for task in tasks %}
+                <div class="task-card{% if task.status == 'completed' %} task-completed{% endif %}">
+                    <div class="task-checkbox {{ task.priority }}{% if task.status == 'completed' %} completed{% endif %}">
+                        {% if task.status == 'completed' %}<i class="fas fa-check" style="font-size: 0.7rem;"></i>{% endif %}
+                    </div>
+                    <div class="task-content">
+                        <div class="task-title">
+                            {{ task.title }}
+                            <span class="priority-badge priority-{{ task.priority }}">{{ task.priority|title }} Priority</span>
+                        </div>
+                        <div class="task-info">
+                            <div class="task-subject">
+                                <i class="fas fa-book"></i> {{ task.subject.name }}
+                            </div>
+                            <div class="task-due-date">
+                                <i class="fas fa-calendar-alt"></i> Due: {{ task.due_date|date:'M d, Y' }}
+                            </div>
+                        </div>
+                        {% if task.description %}
+                        <div class="task-description">
+                            {{ task.description }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-action-btn" onclick="editTask('{{ task.id }}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="task-action-btn" onclick="deleteTask('{{ task.id }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <p>No tasks found</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div>
+            <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--gray);">Completed Tasks</h3>
+            <div class="task-list">
+                {% for task in tasks_data.completed_tasks %}
+                <div class="task-card task-completed">
+                    <div class="task-checkbox {{ task.priority }} completed">
+                        <i class="fas fa-check" style="font-size: 0.7rem;"></i>
+                    </div>
+                    
+                    <div class="task-content">
+                        <div class="task-title">
+                            {{ task.title }}
+                            <span class="priority-badge priority-{{ task.priority }}">{{ task.priority|title }} Priority</span>
+                        </div>
+                        
+                        <div class="task-info">
+                            <div class="task-subject">
+                                <i class="fas fa-book"></i> {{ task.subject }}
+                            </div>
+                            <div class="task-due-date">
+                                <i class="fas fa-check-circle"></i> Completed: {{ task.completed_date }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="task-actions">
+                        <button class="action-button">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button class="action-button">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Task Analytics</h2>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: var(--primary);">{{ total_count }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Total Tasks</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: var(--secondary);">{{ pending_count }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Pending Tasks</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: var(--success);">{{ completed_count }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Completed Tasks</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: var(--warning);">{{ overdue_count }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Overdue Tasks</div>
+        </div>
+    </div>
+    
+    <div style="height: 200px;">
+        <!-- Add a chart here in a real implementation -->
+<!-- Task Management Interface -->
+<div class="tasks-container">
+    <!-- Task Filters -->
+    <div class="task-filters">
+        <div class="filter-group">
+            <label>Status:</label>
+            <select class="filter-select" id="statusFilter">
+                <option value="all" {% if filter_status == 'all' %}selected{% endif %}>All</option>
+                <option value="pending" {% if filter_status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="completed" {% if filter_status == 'completed' %}selected{% endif %}>Completed</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Priority:</label>
+            <select class="filter-select" id="priorityFilter">
+                <option value="all" {% if filter_priority == 'all' %}selected{% endif %}>All</option>
+                <option value="high" {% if filter_priority == 'high' %}selected{% endif %}>High</option>
+                <option value="medium" {% if filter_priority == 'medium' %}selected{% endif %}>Medium</option>
+                <option value="low" {% if filter_priority == 'low' %}selected{% endif %}>Low</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <input type="text" class="search-input" id="searchTask" placeholder="Search tasks..." value="{{ search_query }}">
+        </div>
+        
+        <div class="filter-group ml-auto" style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="text" class="search-input" id="searchTask" placeholder="Search tasks..." value="{{ search_query }}">
+            <button class="btn btn-primary" onclick="applyFilters()">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+    </div>
+    
+    <!-- Task List -->
+    <div class="task-list" id="taskList">
+        {% for task in tasks %}
+        <div class="task-card" data-task-id="{{ task.id }}">
+            <div class="task-checkbox {{ task.priority }} {% if task.status == 'completed' %}completed{% endif %}" 
+                 onclick="toggleTaskStatus('{{ task.id }}', '{{ task.status }}')">
+                {% if task.status == 'completed' %}
+                <i class="fas fa-check"></i>
+                {% endif %}
+            </div>
+            
+            <div class="task-content">
+                <div class="task-title">
+                    {{ task.title }}
+                    <span class="priority-badge {{ task.priority }}">{{ task.priority|title }}</span>
+                </div>
+                <div class="task-info">
+                    <div class="task-subject">
+                        <i class="fas fa-book"></i> {{ task.subject.name }}
+                    </div>
+                    <div class="task-due-date">
+                        <i class="fas fa-calendar"></i> {{ task.due_date|date:"M d, Y" }}
+                    </div>
+                </div>
+                {% if task.description %}
+                <div class="task-description">
+                    {{ task.description }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="task-actions">
+                <button class="task-action-btn" onclick="editTask('{{ task.id }}')">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="task-action-btn" onclick="deleteTask('{{ task.id }}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>No tasks found</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- New Task Modal -->
+<div class="modal" id="newTaskModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">New Task</h3>
+            <button class="modal-close" onclick="hideNewTaskModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="newTaskForm">
+            <div class="form-group">
+                <label class="form-label">Title</label>
+                <input type="text" class="form-input" id="taskTitle" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-input" id="taskDescription" rows="3"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Subject</label>
+                <select class="form-select" id="taskSubject" required>
+                    {% for subject in subjects %}
+                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Due Date</label>
+                <input type="datetime-local" class="form-input" id="taskDueDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Priority</label>
+                <select class="form-select" id="taskPriority">
+                    <option value="high">High</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Create Task</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrascript %}
+<script>
+// Notification dropdown logic
+const bell = document.getElementById('notificationBell');
+const dropdown = document.getElementById('notificationsDropdown');
+if (bell && dropdown) {
+    let dropdownJustOpened = false;
+    bell.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+            dropdown.style.display = 'block';
+            dropdownJustOpened = true;
+        } else {
+            dropdown.style.display = 'none';
+        }
+    });
+    document.addEventListener('click', function(e) {
+        if (dropdownJustOpened) {
+            dropdownJustOpened = false;
+            return;
+        }
+        if (!dropdown.contains(e.target) && e.target !== bell && !bell.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+}
+// Show/hide task modal
+function showNewTaskModal() {
+    document.getElementById('newTaskModal').classList.add('show');
+}
+
+function hideNewTaskModal() {
+    document.getElementById('newTaskModal').classList.remove('show');
+}
+
+// Handle new task form submission
+document.getElementById('newTaskForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const data = {
+        title: document.getElementById('taskTitle').value,
+        description: document.getElementById('taskDescription').value,
+        subject: document.getElementById('taskSubject').value,
+        due_date: document.getElementById('taskDueDate').value,
+        priority: document.getElementById('taskPriority').value
+    };
+    
+    fetch('/tasks/add/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.reload();
+        } else {
+            alert('Error creating task: ' + data.message);
+        }
+    });
+});
+
+// Toggle task status
+function toggleTaskStatus(taskId, currentStatus) {
+    const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
+    
+    fetch(`/tasks/${taskId}/status/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.reload();
+        }
+    });
+}
+
+// Delete task
+function deleteTask(taskId) {
+    if (confirm('Are you sure you want to delete this task?')) {
+        fetch(`/tasks/${taskId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+                if (taskElement) {
+                    taskElement.remove();
+                }
+            }
+        });
+    }
+}
+
+// Edit task
+function editTask(taskId) {
+    // For now, we'll reload the page to the edit view
+    window.location.href = `/tasks/${taskId}/edit/`;
+}
+
+// Handle filters
+document.getElementById('statusFilter').addEventListener('change', applyFilters);
+document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+
+let searchTimeout;
+document.getElementById('searchTask').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(applyFilters, 300);
+});
+
+function applyFilters() {
+    const status = document.getElementById('statusFilter').value;
+    const priority = document.getElementById('priorityFilter').value;
+    const search = document.getElementById('searchTask').value;
+    
+    window.location.href = `/tasks/?status=${status}&priority=${priority}&search=${encodeURIComponent(search)}`;
+}
+
+// Get CSRF token for POST requests
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#newTaskModal') && !e.target.matches('.btn-primary')) {
+        hideNewTaskModal();
+    }
+});
+
+// Set default due date to tomorrow in the new task form
+document.addEventListener('DOMContentLoaded', function() {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setMinutes(tomorrow.getMinutes() - tomorrow.getTimezoneOffset());
+    document.getElementById('taskDueDate').value = tomorrow.toISOString().slice(0,16);
+});
+</script>
+{% endblock %}

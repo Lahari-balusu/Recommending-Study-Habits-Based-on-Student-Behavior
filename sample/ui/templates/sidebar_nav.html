@@ -1,0 +1,79 @@
+<!-- Main Navigation -->
+<div class="nav-section">
+    <h3 class="nav-title">MAIN MENU</h3>
+    <a href="{% url 'dashboard' %}" class="nav-item {% if request.path == '/dashboard/' %}active{% endif %}">
+        <i class="fas fa-home"></i>
+        <span>Dashboard</span>
+    </a>
+    <a href="{% url 'subjects' %}" class="nav-item {% if request.path == '/subjects/' %}active{% endif %}">
+        <i class="fas fa-book"></i>
+        <span>Subjects</span>
+    </a>
+    <a href="{% url 'schedule' %}" class="nav-item {% if request.path == '/schedule/' %}active{% endif %}">
+        <i class="fas fa-calendar"></i>
+        <span>Schedule</span>
+    </a>
+    <a href="{% url 'tasks' %}" class="nav-item {% if request.path == '/tasks/' %}active{% endif %}">
+        <i class="fas fa-tasks"></i>
+        <span>Tasks</span>
+        {% if pending_tasks_count %}
+        <span class="notification-badge">{{ pending_tasks_count }}</span>
+        {% endif %}
+    </a>
+</div>
+
+<!-- Student Tools -->
+<div class="nav-section">
+    <h3 class="nav-title">LEARNING TOOLS</h3>
+    <a href="{% url 'insights' %}" class="nav-item {% if request.path == '/insights/' %}active{% endif %}">
+        <i class="fas fa-chart-line"></i>
+        <span>Insights</span>
+    </a>
+    <a href="{% url 'peer_comparison' %}" class="nav-item {% if request.path == '/peer-comparison/' %}active{% endif %}">
+        <i class="fas fa-users"></i>
+        <span>Peer Comparison</span>
+    </a>
+</div>
+
+<!-- Admin Section -->
+{% if user.is_superuser %}
+<div class="nav-section">
+    <h3 class="nav-title">ADMIN TOOLS</h3>
+    <a href="{% url 'add_student' %}" class="nav-item {% if request.path == '/add-student/' %}active{% endif %}">
+        <i class="fas fa-user-graduate"></i>
+        <span>Student Management</span>
+    </a>
+    <a href="{% url 'task_scheduler' %}" class="nav-item {% if request.path == '/admin/task-scheduler/' %}active{% endif %}">
+        <i class="fas fa-clock"></i>
+        <span>Task Scheduler</span>
+    </a>
+    <a href="#" class="nav-item" onclick="toggleNotifications(); return false;">
+        <i class="fas fa-bell"></i>
+        <span>Notifications</span>
+        {% if unread_notifications_count > 0 %}
+        <span class="notification-badge">{{ unread_notifications_count }}</span>
+        {% endif %}
+    </a>
+    <a href="{% url 'subjects' %}" class="nav-item {% if request.path == '/subjects/' %}active{% endif %}">
+        <i class="fas fa-book-open"></i>
+        <span>Course Management</span>
+    </a>
+</div>
+{% endif %}
+
+<!-- Settings & Profile -->
+<div class="nav-section">
+    <h3 class="nav-title">USER</h3>
+    <a href="{% url 'profile' %}" class="nav-item {% if request.path == '/profile/' %}active{% endif %}">
+        <i class="fas fa-user"></i>
+        <span>Profile</span>
+    </a>
+    <a href="{% url 'settings' %}" class="nav-item {% if request.path == '/settings/' %}active{% endif %}">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+    </a>
+    <a href="{% url 'logout' %}" class="nav-item">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+    </a>
+</div>

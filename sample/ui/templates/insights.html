@@ -1,0 +1,425 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Insights | StudyTrack AI{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        width: 100%;
+    }
+    
+    .insight-card {
+        background: var(--dark);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .insight-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.2rem;
+    }
+    
+    .insight-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .insight-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    
+    .insight-content {
+        color: var(--gray);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        flex: 1;
+        margin-bottom: 1rem;
+    }
+    
+    .insight-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--light);
+        margin-top: auto;
+    }
+    
+    .insight-label {
+        color: var(--gray);
+        font-size: 0.9rem;
+        margin-top: 0.3rem;
+    }
+    
+    .learning-style-card {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.05));
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    .optimal-time-card {
+        background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(20, 184, 166, 0.05));
+        border: 1px solid rgba(20, 184, 166, 0.2);
+    }
+    
+    .attention-span-card {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05));
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    
+    .recommendation-card {
+        background: var(--dark);
+        border-radius: 10px;
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .recommendation-card.high {
+        border-left: 4px solid var(--primary);
+    }
+    
+    .recommendation-card.medium {
+        border-left: 4px solid var(--secondary);
+    }
+    
+    .recommendation-card.low {
+        border-left: 4px solid var(--warning);
+    }
+    
+    .recommendation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.8rem;
+    }
+    
+    .recommendation-title {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    .recommendation-badge {
+        background: rgba(99, 102, 241, 0.2);
+        color: var(--primary-light);
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+    }
+    
+    .recommendation-badge.high {
+        background: rgba(99, 102, 241, 0.2);
+        color: var(--primary-light);
+    }
+    
+    .recommendation-badge.medium {
+        background: rgba(20, 184, 166, 0.2);
+        color: var(--secondary);
+    }
+    
+    .recommendation-badge.low {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning);
+    }
+    
+    .recommendation-content {
+        color: var(--gray);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+    
+    .recommendation-actions {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .btn-sm {
+        padding: 0.3rem 0.8rem;
+        font-size: 0.8rem;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+        border: none;
+    }
+    
+    .btn-sm:hover {
+        background: rgba(99, 102, 241, 0.2);
+    }
+    
+    .profile-strengths, .profile-weaknesses {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .profile-tag {
+        padding: 0.35rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .strength-tag {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--success);
+    }
+    
+    .weakness-tag {
+        background: rgba(239, 68, 68, 0.15);
+        color: var(--danger);
+    }
+    
+    .attribute-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .attribute-row:last-child {
+        border-bottom: none;
+    }
+    
+    .attribute-name {
+        color: var(--gray);
+    }
+    
+    .attribute-value {
+        font-weight: 500;
+    }
+    
+    /* Card Styling */
+    .card {
+        background: var(--dark);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+    }
+    
+    .card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .card-content {
+        padding: 1.5rem;
+    }
+    
+    /* Responsive Styles */
+    @media (max-width: 1200px) {
+        .insights-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    
+    @media (max-width: 992px) {
+        .insights-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .insights-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}Study Insights{% endblock %}
+{% block header_subtitle %}AI-powered analysis of your learning patterns{% endblock %}
+
+{% block content %}
+<div class="insights-grid">
+    <div class="insight-card learning-style-card">
+        <div class="insight-header">
+            <h3 class="insight-title">Learning Style</h3>
+            <div class="insight-icon">
+                <i class="fas fa-brain"></i>
+            </div>
+        </div>
+        <div class="insight-content">
+            Your primary learning style is visual-spatial. You learn best through visual aids, diagrams, and spatial organization of information.
+        </div>
+        <div class="insight-value">{{ insights_data.learning_style }}</div>
+        <div class="insight-label">Primary Learning Style</div>
+    </div>
+    
+    <div class="insight-card optimal-time-card">
+        <div class="insight-header">
+            <h3 class="insight-title">Optimal Study Time</h3>
+            <div class="insight-icon" style="background: rgba(20, 184, 166, 0.1); color: var(--secondary);">
+                <i class="fas fa-clock"></i>
+            </div>
+        </div>
+        <div class="insight-content">
+            Based on your past performance data, you tend to be most productive and focused during morning hours.
+        </div>
+        <div class="insight-value">{{ insights_data.optimal_study_time }}</div>
+        <div class="insight-label">Peak Productivity Period</div>
+    </div>
+    
+    <div class="insight-card attention-span-card">
+        <div class="insight-header">
+            <h3 class="insight-title">Attention Span</h3>
+            <div class="insight-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+        </div>
+        <div class="insight-content">
+            Your optimal focus duration before needing a short break. Consider using the Pomodoro Technique for maximum effectiveness.
+        </div>
+        <div class="insight-value">{{ insights_data.attention_span }}</div>
+        <div class="insight-label">Optimal Focus Duration</div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-header">
+        <h2 class="card-title">Personalized Recommendations</h2>
+    </div>
+    
+    <div class="card-content" style="padding: 0 1.5rem 1rem;">
+        {% for recommendation in insights_data.recommendations %}
+        <div class="recommendation-card {% if recommendation.priority == 'High Priority' %}high{% elif recommendation.priority == 'Medium Priority' %}medium{% else %}low{% endif %}">
+            <div class="recommendation-header">
+                <div class="recommendation-title">{{ recommendation.title }}</div>
+                <div class="recommendation-badge {% if recommendation.priority == 'High Priority' %}high{% elif recommendation.priority == 'Medium Priority' %}medium{% else %}low{% endif %}">{{ recommendation.priority }}</div>
+            </div>
+            <div class="recommendation-content">{{ recommendation.content }}</div>
+            <div class="recommendation-actions">
+                <button class="btn-sm">Apply Recommendation</button>
+                <button class="btn-sm" style="background: rgba(255, 255, 255, 0.05); color: var(--gray);">Dismiss</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="profile-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Learning Profile</h2>
+        </div>
+        
+        <div class="card-content" style="padding: 0 1.5rem 1.5rem;">
+            <h3 style="margin: 1rem 0 0.5rem; font-size: 1rem; color: var(--success);">Strengths</h3>
+            <div class="profile-strengths">
+                {% for strength in insights_data.strengths %}
+                <div class="profile-tag strength-tag">{{ strength }}</div>
+                {% endfor %}
+            </div>
+            
+            <h3 style="margin: 1.5rem 0 0.5rem; font-size: 1rem; color: var(--danger);">Areas for Improvement</h3>
+            <div class="profile-weaknesses">
+                {% for weakness in insights_data.weaknesses %}
+                <div class="profile-tag weakness-tag">{{ weakness }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Cognitive Profile</h2>
+        </div>
+        
+        <div>
+            <div class="attribute-row">
+                <div class="attribute-name">Memory Retention</div>
+                <div class="attribute-value">High (85%)</div>
+            </div>
+            <div class="attribute-row">
+                <div class="attribute-name">Critical Thinking</div>
+                <div class="attribute-value">Very High (92%)</div>
+            </div>
+            <div class="attribute-row">
+                <div class="attribute-name">Problem Solving</div>
+                <div class="attribute-value">High (87%)</div>
+            </div>
+            <div class="attribute-row">
+                <div class="attribute-name">Concentration</div>
+                <div class="attribute-value">Medium (74%)</div>
+            </div>
+            <div class="attribute-row">
+                <div class="attribute-name">Information Processing</div>
+                <div class="attribute-value">High (89%)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Study Strategy Recommendations</h2>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+        <div style="padding: 1rem; background: rgba(255, 255, 255, 0.03); border-radius: 10px;">
+            <h3 style="font-size: 1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-map" style="color: var(--primary);"></i> Mind Mapping
+            </h3>
+            <p style="color: var(--gray); font-size: 0.9rem;">
+                Create visual mind maps to organize complex topics. This aligns with your visual learning style.
+            </p>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(255, 255, 255, 0.03); border-radius: 10px;">
+            <h3 style="font-size: 1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-sync-alt" style="color: var(--secondary);"></i> Spaced Repetition
+            </h3>
+            <p style="color: var(--gray); font-size: 0.9rem;">
+                Review material at increasing intervals to improve long-term retention and recall.
+            </p>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(255, 255, 255, 0.03); border-radius: 10px;">
+            <h3 style="font-size: 1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-comments" style="color: var(--warning);"></i> Verbal Explanation
+            </h3>
+            <p style="color: var(--gray); font-size: 0.9rem;">
+                Explain concepts aloud to reinforce understanding and identify knowledge gaps.
+            </p>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(255, 255, 255, 0.03); border-radius: 10px;">
+            <h3 style="font-size: 1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-pen" style="color: var(--danger);"></i> Active Note-Taking
+            </h3>
+            <p style="color: var(--gray); font-size: 0.9rem;">
+                Use the Cornell method for notes to improve organization and retention of information.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrascript %}
+// JavaScript code specific to insights page
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Task Scheduler</h2>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <div class="card-body">
+            {% for task in tasks %}
+            <div class="task-item mb-4 p-3 border rounded {% if not task.is_active %}bg-light{% endif %}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-2">{{ task.name }}</h5>
+                        {% if task.last_run %}
+                        <small class="text-muted">Last run: {{ task.last_run|timesince }} ago</small>
+                        {% else %}
+                        <small class="text-muted">Never run</small>
+                        {% endif %}
+                    </div>
+                    <div class="task-actions">
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="task_id" value="{{ task.id }}">
+                            <input type="hidden" name="action" value="toggle">
+                            <button type="submit" class="btn btn-sm {% if task.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                                {% if task.is_active %}Deactivate{% else %}Activate{% endif %}
+                            </button>
+                        </form>
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="task_id" value="{{ task.id }}">
+                            <input type="hidden" name="action" value="run_now">
+                            <button type="submit" class="btn btn-sm btn-primary" {% if not task.is_active %}disabled{% endif %}>
+                                Run Now
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="task_id" value="{{ task.id }}">
+                        <input type="hidden" name="action" value="update">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="time_9am_{{ task.id }}" 
+                                           name="time_9am" {% if task.time_9am %}checked{% endif %}>
+                                    <label class="form-check-label" for="time_9am_{{ task.id }}">9:00 AM</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="time_2pm_{{ task.id }}"
+                                           name="time_2pm" {% if task.time_2pm %}checked{% endif %}>
+                                    <label class="form-check-label" for="time_2pm_{{ task.id }}">2:00 PM</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="time_7pm_{{ task.id }}"
+                                           name="time_7pm" {% if task.time_7pm %}checked{% endif %}>
+                                    <label class="form-check-label" for="time_7pm_{{ task.id }}">7:00 PM</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-secondary mt-2">Update Schedule</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
